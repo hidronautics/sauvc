@@ -1,10 +1,28 @@
 {
-"labels": [
-    "gate",
-    "red_flare",
-    "yellow_flare",
-    "mat",
-    "red_bowl",
-    "blue_bowl"
-]
+    "labels": [
+        {
+            "name": "gate",
+            "count": 1
+        },
+        {
+            "name": "red_flare",
+            "count": 1
+        },
+        {
+            "name": "yellow_flare",
+            "count": 1
+        },
+        {
+            "name": "mat",
+            "count": 1
+        },
+        {
+            "name": "red_bowl",
+            "count": 3
+        },
+        {
+            "name": "blue_bowl",
+            "count": 1
+        }
+    ]
 }
