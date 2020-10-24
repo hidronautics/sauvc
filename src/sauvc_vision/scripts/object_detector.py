@@ -1,115 +1,89 @@
 #!/usr/bin/env python
 
-# https://www.pyimagesearch.com/2018/11/19/mask-r-cnn-with-opencv/
-
 import rospy
-import tensorflow as tf
 import rospkg
 import cv2 as cv
+import json
+import os
 import numpy as np
 import time
 import os
 from cv_bridge import CvBridge, CvBridgeError
-from sauvc_common.msg import Object 
+from sauvc_common.msg import Object
+from sauvc_common.msg import ObjectsArray
 from sensor_msgs.msg import Image
 
+
 class object_detector:
-    def __init__(self, front_camera_sub_topic, bottom_camera_sub_topic, confidence):
+    def __init__(self, input_image_topic, confidence):
+        # get node name
         node_name = rospy.get_name()
-        rospy.loginfo(node_name + "node initializing...")
-        # constants 
+        rospy.loginfo("{} node initializing".format(node_name))
+        # get paths
         rospack = rospkg.RosPack()
         path = rospack.get_path('sauvc_vision')
-        labels_path = path + "/net/labels.txt"
-        colors_path = path + "/net/colors.txt"
-        weights_path = path + "/net/frozen_inference_graph.pb"
-        config_path = path + "/net/opencv_graph.pbtxt"
+        weights_path = os.path.sep.join(
+            [path, "net", "frozen_inference_graph.pb"])
+        labels_path = os.path.sep.join([path, "net", "labels.json"])
+        config_path = os.path.sep.join([path, "net", "opencv_graph.pbtxt"])
         self.confidence = confidence
-        self.labels = open(labels_path).read().strip().split("\n")
-        self.colors = open(colors_path).read().strip().split("\n")
+        # read labels
+        with open("labels.json") as json_file:
+            self.labels = json.loads(json_file.read())["labels"]
+
         # ROS Topic names
-        gate_topic = node_name + "/gate"
-        red_flare_topic = node_name + "/red_flare"
-        yellow_flare_1_topic = node_name + "/yellow_flare_1"
-        yellow_flare_2_topic = node_name + "/yellow_flare_2"
-        mat_topic = node_name + "/mat_topic"
-        red_bowl_1_topic = node_name + "/red_bowl_1_topic"
-        red_bowl_2_topic = node_name + "/red_bowl_2_topic"
-        red_bowl_3_topic = node_name + "/red_bowl_3_topic"
-        blue_bowl_topic = node_name + "/blue_bowl_topic"
-        dnn_image_topic = "/dnn/image"
+        objects_array_topic = "/{}/objects".format(node_name)
+        output_image_topic = "/{}/image".format(node_name)
+
         # init msg
-        self.gate_message = Object()
-        self.red_flare_message = Object()
-        self.yellow_flare_1_message = Object()
-        self.yellow_flare_2_message = Object()
-        self.mat_message = Object()
-        self.red_bowl_1_message = Object()
-        self.red_bowl_2_message = Object()
-        self.red_bowl_3_message = Object()
-        self.blue_bowl_message = Object()
-        self.messages = dict()
-        self.messages['gate'] = self.gate_message
-        self.messages['red_flare'] = self.red_flare_message
-        self.messages['yellow_flare_1'] = self.yellow_flare_1_message
-        self.messages['yellow_flare_2'] = self.yellow_flare_2_message
-        self.messages['mat'] = self.mat_message
-        self.messages['red_bowl_1'] = self.red_bowl_1_message
-        self.messages['red_bowl_2'] = self.red_bowl_2_message
-        self.messages['red_bowl_3'] = self.red_bowl_3_message
-        self.messages['blue_bowl'] = self.blue_bowl_message
+        self.object_msg = Object()
+        self.objects_array_msg = ObjectsArray()
+
         # subscribers
-        self.image_sub = rospy.Subscriber(front_camera_sub_topic, Image, self.callback, queue_size=1)
+        self.image_sub = rospy.Subscriber(
+            input_image_topic, Image, self.callback, queue_size=1)
+
         # publishers
-        self.gate_pub = rospy.Publisher(gate_topic, Object, queue_size=1)
-        self.red_flare_pub = rospy.Publisher(red_flare_topic, Object, queue_size=1)
-        self.yellow_flare_1_pub = rospy.Publisher(yellow_flare_1_topic, Object, queue_size=1)
-        self.yellow_flare_2_pub = rospy.Publisher(yellow_flare_2_topic, Object, queue_size=1)
-        self.mat_pub = rospy.Publisher(mat_topic, Object, queue_size=1)
-        self.red_bowl_1_pub = rospy.Publisher(red_bowl_1_topic, Object, queue_size=1)
-        self.red_bowl_2_pub = rospy.Publisher(red_bowl_2_topic, Object, queue_size=1)
-        self.red_bowl_3_pub = rospy.Publisher(red_bowl_3_topic, Object, queue_size=1)
-        self.blue_bowl_pub = rospy.Publisher(blue_bowl_topic, Object, queue_size=1)
-        self.image_pub = rospy.Publisher(dnn_image_topic, Image, queue_size=1)
-        self.publishers = dict()
-        self.publishers['gate'] = self.gate_pub
-        self.publishers['red_flare'] = self.red_flare_pub
-        self.publishers['yellow_flare_1'] = self.yellow_flare_1_pub
-        self.publishers['yellow_flare_2'] = self.yellow_flare_2_pub
-        self.publishers['mat'] = self.mat_pub
-        self.publishers['red_bowl_1'] = self.red_bowl_1_pub
-        self.publishers['red_bowl_2'] = self.red_bowl_2_pub
-        self.publishers['red_bowl_3'] = self.red_bowl_3_pub
-        self.publishers['blue_bowl'] = self.blue_bowl_pub
+        self.objects_array_pub = rospy.Publisher(
+            objects_array_topic, ObjectsArray, queue_size=10)
+        self.image_pub = rospy.Publisher(
+            output_image_topic, Image, queue_size=1)
+
         # init cv_bridge
         self.bridge = CvBridge()
         # load our NET from disk
         rospy.loginfo("Loading NET from disk...")
         self.cvNet = cv.dnn.readNetFromTensorflow(weights_path, config_path)
-            
-    def callback(self,data):
+
+    def callback(self, data):
         try:
             # convert ROS image to OpenCV image
             cv_image = self.bridge.imgmsg_to_cv2(data, "bgr8")
             # detect our objects
-            objects = self.detector(cv_image)
-            # publish object coordinates and existance
-            for key in objects.keys():
-                obj = objects.get(key)
-                self.messages[key].name = obj.get('name')
-                self.messages[key].is_exist = obj.get('is_exist')
-                self.messages[key].x_start = obj.get('x_start')
-                self.messages[key].y_start = obj.get('y_start')
-                self.messages[key].x_end = obj.get('x_end')
-                self.messages[key].y_end = obj.get('y_end')
-                self.messages[key].x_center = obj.get('x_center')
-                self.messages[key].y_center = obj.get('y_center')
-                self.publishers[key].publish(self.messages[key])
+            dnn_objects = self.detector(cv_image)
+            # publish objects
+            for dnn_object in dnn_objects:
+                self.object_msg.name = dnn_object["name"]
+                self.object_msg.confidence = dnn_object["confidence"]
+                x_start = dnn_object['box'][0]
+                self.object_msg.x_start = x_start
+                y_start = dnn_object['box'][1]
+                self.object_msg.y_start = y_start
+                x_end = dnn_object['box'][2]
+                self.object_msg.x_end = x_end
+                y_end = dnn_object['box'][3]
+                self.object_msg.y_end = y_end
+                x_center = x_start + (x_end - x_start)/2
+                self.object_msg.x_center = x_center
+                y_center = y_center + (y_end - y_center)/2
+                self.object_msg.y_center = y_center
+                self.objects_array_msg.push_back(object_msg)
+            self.objects_array_pub(self.objects_array_msg)
             # draw bounding boxes
-            dnn_cv_image = self.draw(cv_image, objects)
+            dnn_cv_image = self.draw(cv_image, dnn_objects)
             # convert cv image into ros format
             ros_image = self.bridge.cv2_to_imgmsg(dnn_cv_image, "bgr8")
-            # publish image after dnn
+            # publish output image
             self.image_pub.publish(ros_image)
         except CvBridgeError as e:
             print(e)
@@ -118,63 +92,63 @@ class object_detector:
         # construct a blob from the input image and then perform a
         # forward pass, giving us the bounding box
         # coordinates of the objects in the image
-        self.cvNet.setInput(cv.dnn.blobFromImage(img, size=(300, 300), swapRB=True, crop=False))
+        self.cvNet.setInput(cv.dnn.blobFromImage(
+            img, size=(300, 300), swapRB=True, crop=False))
         start = time.time()
         cvOut = self.cvNet.forward()
         end = time.time()
         # show timing information and volume information on NET
         #rospy.loginfo("Took {:.6f} seconds".format(end - start))
         # dictionary with objects: obj[object_id, object_label_id, confidence]
-        objects = dict()
+        objects = []
+        rows = img.shape[0]
+        cols = img.shape[1]
         # go through all detected objects
         for i in range(0, cvOut.shape[2]):
             # check confidence
-            object_confidence = cvOut[0, 0, i, 2]
-            object_id = i
-            object_label_id = int(cvOut[0, 0, i, 1])
-            if object_confidence >= self.confidence:
-                key = self.labels[object_label_id]
-                if objects.get(key):
-                    if  object_confidence > objects.get(key)[2]:
-                        objects[key] = object_id, object_label_id, object_confidence
-                    else:
-                        continue
-                else:
-                    objects[key] = object_id, object_label_id, object_confidence
-        for key in objects.keys():
-            id, label_id, confidence = objects.pop(key)
-            rows = img.shape[0]
-            cols = img.shape[1]
-            box = cvOut[0, 0, id, 3:7] * np.array([cols, rows, cols, rows])
-            (x_start, y_start, x_end, y_end) = box.astype("int")
-            x_center = int((x_end + x_start) / 2.0)
-            y_center = int((y_end + y_start) / 2.0)
-            objects[key] = {'name': self.labels[id],
-                            'is_exist': True,
-                            'confidence': confidence,
-                            'x_start': x_start,
-                            'y_start': y_start,
-                            'x_end': x_end,
-                            'y_end': y_end,
-                            'x_center': x_center,
-                            'y_center': y_center}
-        
+            classID = int(cvOut[0, 0, i, 1])
+            confidence = cvOut[0, 0, i, 2]
+            # filter out weak predictions by ensuring the detected probability
+            # is greater than the minimum probability
+            if confidence > self.confidence:
+                object_ = {}
+                object_["name"] = self.labels[classID-1]
+                object_["confidence"] = confidence
+                # clone our original image so we can draw on it
+                clone = img.copy()
+                # scale the bounding box coordinates back relative to the
+                # size of the image and then compute the width and the height
+                # of the bounding box
+                box = cvOut[0, 0, i, 3:7] * np.array([cols, rows, cols, rows])
+                object_["box"] = box.astype("int")
+                objects.append(object_)
         return objects
 
+    def deleteMultipleObjects(self, objects):
+        pass
+
     def draw(self, img, objects):
-        # scale the bounding box coordinates back relative to the
-        # size of the image and then compute the width and the height
-        # of the bounding box
-        for key in objects.keys():
-            obj = objects.get(key)
-            #draw bounding box on image
-            cv.rectangle(img, (obj['x_start'], obj['y_start']), (obj['x_end'], obj['y_end']), (173,255,47), 4)  
+        for dnn_object in objects:
+            x_start = dnn_object['box'][0]
+            y_start = dnn_object['box'][1]
+            x_end = dnn_object['box'][2]
+            y_end = dnn_object['box'][3]
+            x_center = int(x_start + (x_end - x_start)/2)
+            y_center = int(y_center + (y_end - y_center)/2)
+            cv.rectangle(img, (x_start, y_start), (x_end, y_end),
+                         (23, 230, 210), thickness=1)
+            cv.line(img, (x_center, y_center - 5), (x_center, y_center + 5),
+                     (23, 230, 210), thickness=1)
+            cv.line(img, (x_center - 5, y_center), (x_center + 5, y_center),
+                     (23, 230, 210), thickness=1)
             # draw the predicted label and associated probability of the
             # instance segmentation on the image
-            text = obj['name'] + str(obj['confidence'])
-            cv.putText(img, text, (obj['x_start'], obj['y_start'] + 15), cv.FONT_HERSHEY_SIMPLEX, 0.5, (173,255,47), 2)
-        
+            if (y_start < )
+            text = "{}: {:.2f}".format(dnn_object['name'], dnn_object['confidence'])
+            cv.putText(img, text, (startX, startY - 5),
+                       cv.FONT_HERSHEY_SIMPLEX, 0.5, (23, 230, 210), 2)
         return img
+
 
 if __name__ == '__main__':
     rospy.init_node('object_detector')
@@ -183,7 +157,8 @@ if __name__ == '__main__':
     bottom_camera_sub_topic = rospy.get_param('~bottom_camera_sub_topic')
     dnn_confidence = int(rospy.get_param('~dnn_confidence'))
     try:
-        gt = object_detector(front_camera_sub_topic, bottom_camera_sub_topic, dnn_confidence)
+        gt = object_detector(front_camera_sub_topic,
+                             bottom_camera_sub_topic, dnn_confidence)
         rospy.spin()
     except rospy.ROSInterruptException:
         print("Shutting down")

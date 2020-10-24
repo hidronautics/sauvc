@@ -12,11 +12,6 @@ from cv_bridge import CvBridge, CvBridgeError
 from sauvc_common.msg import Objects
 from sensor_msgs.msg import Image
 
-# patch tf1 into `utils.ops`
-utils_ops.tf = tf.compat.v1
-# Patch the location of gfile
-tf.gfile = tf.io.gfile
-
 
 class object_detector:
     def __init__(self, front_camera_sub_topic, bottom_camera_sub_topic, confidence):

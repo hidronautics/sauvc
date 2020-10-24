@@ -27,23 +27,23 @@ node {
     }
   }
 }
-node {
-  name: "Preprocessor/mul"
-  op: "Mul"
-  input: "image_tensor"
-  input: "Preprocessor/mul/x"
-}
-node {
-  name: "Preprocessor/sub"
-  op: "Sub"
-  input: "Preprocessor/mul"
-  input: "Preprocessor/sub/y"
-}
-node {
-  name: "FeatureExtractor/MobilenetV2/Conv/Conv2D"
-  op: "Conv2D"
-  input: "Preprocessor/sub"
-  input: "FeatureExtractor/MobilenetV2/Conv/weights"
+node {  
+  name: "Preprocessor/mul"  
+  op: "Mul" 
+  input: "image_tensor" 
+  input: "Preprocessor/mul/x"   
+}   
+node {  
+  name: "Preprocessor/sub"  
+  op: "Sub" 
+  input: "Preprocessor/mul" 
+  input: "Preprocessor/sub/y"   
+}   
+node {  
+  name: "FeatureExtractor/MobilenetV2/Conv/Conv2D"  
+  op: "Conv2D"  
+  input: "Preprocessor/sub" 
+  input: "FeatureExtractor/MobilenetV2/Conv/weights"   
   attr {
     key: "data_format"
     value {
@@ -87,8 +87,8 @@ node {
   }
 }
 node {
-  name: "FeatureExtractor/MobilenetV2/Conv/BatchNorm/FusedBatchNorm"
-  op: "FusedBatchNorm"
+  name: "FeatureExtractor/MobilenetV2/Conv/BatchNorm/FusedBatchNormV3"
+  op: "FusedBatchNormV3"
   input: "FeatureExtractor/MobilenetV2/Conv/Conv2D"
   input: "FeatureExtractor/MobilenetV2/Conv/BatchNorm/gamma"
   input: "FeatureExtractor/MobilenetV2/Conv/BatchNorm/beta"
@@ -106,11 +106,17 @@ node {
       f: 0.001
     }
   }
+  attr {
+    key: "U"
+    value {
+      type: DT_FLOAT
+    }
+  }
 }
 node {
   name: "FeatureExtractor/MobilenetV2/Conv/Relu6"
   op: "Relu6"
-  input: "FeatureExtractor/MobilenetV2/Conv/BatchNorm/FusedBatchNorm"
+  input: "FeatureExtractor/MobilenetV2/Conv/BatchNorm/FusedBatchNormV3"
 }
 node {
   name: "FeatureExtractor/MobilenetV2/expanded_conv/depthwise/depthwise"
@@ -153,8 +159,8 @@ node {
   }
 }
 node {
-  name: "FeatureExtractor/MobilenetV2/expanded_conv/depthwise/BatchNorm/FusedBatchNorm"
-  op: "FusedBatchNorm"
+  name: "FeatureExtractor/MobilenetV2/expanded_conv/depthwise/BatchNorm/FusedBatchNormV3"
+  op: "FusedBatchNormV3"
   input: "FeatureExtractor/MobilenetV2/expanded_conv/depthwise/depthwise"
   input: "FeatureExtractor/MobilenetV2/expanded_conv/depthwise/BatchNorm/gamma"
   input: "FeatureExtractor/MobilenetV2/expanded_conv/depthwise/BatchNorm/beta"
@@ -172,11 +178,17 @@ node {
       f: 0.001
     }
   }
+  attr {
+    key: "U"
+    value {
+      type: DT_FLOAT
+    }
+  }
 }
 node {
   name: "FeatureExtractor/MobilenetV2/expanded_conv/depthwise/Relu6"
   op: "Relu6"
-  input: "FeatureExtractor/MobilenetV2/expanded_conv/depthwise/BatchNorm/FusedBatchNorm"
+  input: "FeatureExtractor/MobilenetV2/expanded_conv/depthwise/BatchNorm/FusedBatchNormV3"
 }
 node {
   name: "FeatureExtractor/MobilenetV2/expanded_conv/project/Conv2D"
@@ -226,8 +238,8 @@ node {
   }
 }
 node {
-  name: "FeatureExtractor/MobilenetV2/expanded_conv/project/BatchNorm/FusedBatchNorm"
-  op: "FusedBatchNorm"
+  name: "FeatureExtractor/MobilenetV2/expanded_conv/project/BatchNorm/FusedBatchNormV3"
+  op: "FusedBatchNormV3"
   input: "FeatureExtractor/MobilenetV2/expanded_conv/project/Conv2D"
   input: "FeatureExtractor/MobilenetV2/expanded_conv/project/BatchNorm/gamma"
   input: "FeatureExtractor/MobilenetV2/expanded_conv/project/BatchNorm/beta"
@@ -245,11 +257,17 @@ node {
       f: 0.001
     }
   }
+  attr {
+    key: "U"
+    value {
+      type: DT_FLOAT
+    }
+  }
 }
 node {
   name: "FeatureExtractor/MobilenetV2/expanded_conv/output"
   op: "Identity"
-  input: "FeatureExtractor/MobilenetV2/expanded_conv/project/BatchNorm/FusedBatchNorm"
+  input: "FeatureExtractor/MobilenetV2/expanded_conv/project/BatchNorm/FusedBatchNormV3"
 }
 node {
   name: "FeatureExtractor/MobilenetV2/expanded_conv_1/expand/Conv2D"
@@ -299,8 +317,8 @@ node {
   }
 }
 node {
-  name: "FeatureExtractor/MobilenetV2/expanded_conv_1/expand/BatchNorm/FusedBatchNorm"
-  op: "FusedBatchNorm"
+  name: "FeatureExtractor/MobilenetV2/expanded_conv_1/expand/BatchNorm/FusedBatchNormV3"
+  op: "FusedBatchNormV3"
   input: "FeatureExtractor/MobilenetV2/expanded_conv_1/expand/Conv2D"
   input: "FeatureExtractor/MobilenetV2/expanded_conv_1/expand/BatchNorm/gamma"
   input: "FeatureExtractor/MobilenetV2/expanded_conv_1/expand/BatchNorm/beta"
@@ -318,11 +336,17 @@ node {
       f: 0.001
     }
   }
+  attr {
+    key: "U"
+    value {
+      type: DT_FLOAT
+    }
+  }
 }
 node {
   name: "FeatureExtractor/MobilenetV2/expanded_conv_1/expand/Relu6"
   op: "Relu6"
-  input: "FeatureExtractor/MobilenetV2/expanded_conv_1/expand/BatchNorm/FusedBatchNorm"
+  input: "FeatureExtractor/MobilenetV2/expanded_conv_1/expand/BatchNorm/FusedBatchNormV3"
 }
 node {
   name: "FeatureExtractor/MobilenetV2/expanded_conv_1/depthwise/depthwise"
@@ -365,8 +389,8 @@ node {
   }
 }
 node {
-  name: "FeatureExtractor/MobilenetV2/expanded_conv_1/depthwise/BatchNorm/FusedBatchNorm"
-  op: "FusedBatchNorm"
+  name: "FeatureExtractor/MobilenetV2/expanded_conv_1/depthwise/BatchNorm/FusedBatchNormV3"
+  op: "FusedBatchNormV3"
   input: "FeatureExtractor/MobilenetV2/expanded_conv_1/depthwise/depthwise"
   input: "FeatureExtractor/MobilenetV2/expanded_conv_1/depthwise/BatchNorm/gamma"
   input: "FeatureExtractor/MobilenetV2/expanded_conv_1/depthwise/BatchNorm/beta"
@@ -384,11 +408,17 @@ node {
       f: 0.001
     }
   }
+  attr {
+    key: "U"
+    value {
+      type: DT_FLOAT
+    }
+  }
 }
 node {
   name: "FeatureExtractor/MobilenetV2/expanded_conv_1/depthwise/Relu6"
   op: "Relu6"
-  input: "FeatureExtractor/MobilenetV2/expanded_conv_1/depthwise/BatchNorm/FusedBatchNorm"
+  input: "FeatureExtractor/MobilenetV2/expanded_conv_1/depthwise/BatchNorm/FusedBatchNormV3"
 }
 node {
   name: "FeatureExtractor/MobilenetV2/expanded_conv_1/project/Conv2D"
@@ -438,8 +468,8 @@ node {
   }
 }
 node {
-  name: "FeatureExtractor/MobilenetV2/expanded_conv_1/project/BatchNorm/FusedBatchNorm"
-  op: "FusedBatchNorm"
+  name: "FeatureExtractor/MobilenetV2/expanded_conv_1/project/BatchNorm/FusedBatchNormV3"
+  op: "FusedBatchNormV3"
   input: "FeatureExtractor/MobilenetV2/expanded_conv_1/project/Conv2D"
   input: "FeatureExtractor/MobilenetV2/expanded_conv_1/project/BatchNorm/gamma"
   input: "FeatureExtractor/MobilenetV2/expanded_conv_1/project/BatchNorm/beta"
@@ -457,11 +487,17 @@ node {
       f: 0.001
     }
   }
+  attr {
+    key: "U"
+    value {
+      type: DT_FLOAT
+    }
+  }
 }
 node {
   name: "FeatureExtractor/MobilenetV2/expanded_conv_1/output"
   op: "Identity"
-  input: "FeatureExtractor/MobilenetV2/expanded_conv_1/project/BatchNorm/FusedBatchNorm"
+  input: "FeatureExtractor/MobilenetV2/expanded_conv_1/project/BatchNorm/FusedBatchNormV3"
 }
 node {
   name: "FeatureExtractor/MobilenetV2/expanded_conv_2/expand/Conv2D"
@@ -511,8 +547,8 @@ node {
   }
 }
 node {
-  name: "FeatureExtractor/MobilenetV2/expanded_conv_2/expand/BatchNorm/FusedBatchNorm"
-  op: "FusedBatchNorm"
+  name: "FeatureExtractor/MobilenetV2/expanded_conv_2/expand/BatchNorm/FusedBatchNormV3"
+  op: "FusedBatchNormV3"
   input: "FeatureExtractor/MobilenetV2/expanded_conv_2/expand/Conv2D"
   input: "FeatureExtractor/MobilenetV2/expanded_conv_2/expand/BatchNorm/gamma"
   input: "FeatureExtractor/MobilenetV2/expanded_conv_2/expand/BatchNorm/beta"
@@ -530,11 +566,17 @@ node {
       f: 0.001
     }
   }
+  attr {
+    key: "U"
+    value {
+      type: DT_FLOAT
+    }
+  }
 }
 node {
   name: "FeatureExtractor/MobilenetV2/expanded_conv_2/expand/Relu6"
   op: "Relu6"
-  input: "FeatureExtractor/MobilenetV2/expanded_conv_2/expand/BatchNorm/FusedBatchNorm"
+  input: "FeatureExtractor/MobilenetV2/expanded_conv_2/expand/BatchNorm/FusedBatchNormV3"
 }
 node {
   name: "FeatureExtractor/MobilenetV2/expanded_conv_2/depthwise/depthwise"
@@ -577,8 +619,8 @@ node {
   }
 }
 node {
-  name: "FeatureExtractor/MobilenetV2/expanded_conv_2/depthwise/BatchNorm/FusedBatchNorm"
-  op: "FusedBatchNorm"
+  name: "FeatureExtractor/MobilenetV2/expanded_conv_2/depthwise/BatchNorm/FusedBatchNormV3"
+  op: "FusedBatchNormV3"
   input: "FeatureExtractor/MobilenetV2/expanded_conv_2/depthwise/depthwise"
   input: "FeatureExtractor/MobilenetV2/expanded_conv_2/depthwise/BatchNorm/gamma"
   input: "FeatureExtractor/MobilenetV2/expanded_conv_2/depthwise/BatchNorm/beta"
@@ -596,11 +638,17 @@ node {
       f: 0.001
     }
   }
+  attr {
+    key: "U"
+    value {
+      type: DT_FLOAT
+    }
+  }
 }
 node {
   name: "FeatureExtractor/MobilenetV2/expanded_conv_2/depthwise/Relu6"
   op: "Relu6"
-  input: "FeatureExtractor/MobilenetV2/expanded_conv_2/depthwise/BatchNorm/FusedBatchNorm"
+  input: "FeatureExtractor/MobilenetV2/expanded_conv_2/depthwise/BatchNorm/FusedBatchNormV3"
 }
 node {
   name: "FeatureExtractor/MobilenetV2/expanded_conv_2/project/Conv2D"
@@ -650,8 +698,8 @@ node {
   }
 }
 node {
-  name: "FeatureExtractor/MobilenetV2/expanded_conv_2/project/BatchNorm/FusedBatchNorm"
-  op: "FusedBatchNorm"
+  name: "FeatureExtractor/MobilenetV2/expanded_conv_2/project/BatchNorm/FusedBatchNormV3"
+  op: "FusedBatchNormV3"
   input: "FeatureExtractor/MobilenetV2/expanded_conv_2/project/Conv2D"
   input: "FeatureExtractor/MobilenetV2/expanded_conv_2/project/BatchNorm/gamma"
   input: "FeatureExtractor/MobilenetV2/expanded_conv_2/project/BatchNorm/beta"
@@ -669,11 +717,17 @@ node {
       f: 0.001
     }
   }
+  attr {
+    key: "U"
+    value {
+      type: DT_FLOAT
+    }
+  }
 }
 node {
   name: "FeatureExtractor/MobilenetV2/expanded_conv_2/add"
-  op: "Add"
-  input: "FeatureExtractor/MobilenetV2/expanded_conv_2/project/BatchNorm/FusedBatchNorm"
+  op: "AddV2"
+  input: "FeatureExtractor/MobilenetV2/expanded_conv_2/project/BatchNorm/FusedBatchNormV3"
   input: "FeatureExtractor/MobilenetV2/expanded_conv_1/output"
 }
 node {
@@ -729,8 +783,8 @@ node {
   }
 }
 node {
-  name: "FeatureExtractor/MobilenetV2/expanded_conv_3/expand/BatchNorm/FusedBatchNorm"
-  op: "FusedBatchNorm"
+  name: "FeatureExtractor/MobilenetV2/expanded_conv_3/expand/BatchNorm/FusedBatchNormV3"
+  op: "FusedBatchNormV3"
   input: "FeatureExtractor/MobilenetV2/expanded_conv_3/expand/Conv2D"
   input: "FeatureExtractor/MobilenetV2/expanded_conv_3/expand/BatchNorm/gamma"
   input: "FeatureExtractor/MobilenetV2/expanded_conv_3/expand/BatchNorm/beta"
@@ -748,11 +802,17 @@ node {
       f: 0.001
     }
   }
+  attr {
+    key: "U"
+    value {
+      type: DT_FLOAT
+    }
+  }
 }
 node {
   name: "FeatureExtractor/MobilenetV2/expanded_conv_3/expand/Relu6"
   op: "Relu6"
-  input: "FeatureExtractor/MobilenetV2/expanded_conv_3/expand/BatchNorm/FusedBatchNorm"
+  input: "FeatureExtractor/MobilenetV2/expanded_conv_3/expand/BatchNorm/FusedBatchNormV3"
 }
 node {
   name: "FeatureExtractor/MobilenetV2/expanded_conv_3/depthwise/depthwise"
@@ -795,8 +855,8 @@ node {
   }
 }
 node {
-  name: "FeatureExtractor/MobilenetV2/expanded_conv_3/depthwise/BatchNorm/FusedBatchNorm"
-  op: "FusedBatchNorm"
+  name: "FeatureExtractor/MobilenetV2/expanded_conv_3/depthwise/BatchNorm/FusedBatchNormV3"
+  op: "FusedBatchNormV3"
   input: "FeatureExtractor/MobilenetV2/expanded_conv_3/depthwise/depthwise"
   input: "FeatureExtractor/MobilenetV2/expanded_conv_3/depthwise/BatchNorm/gamma"
   input: "FeatureExtractor/MobilenetV2/expanded_conv_3/depthwise/BatchNorm/beta"
@@ -814,11 +874,17 @@ node {
       f: 0.001
     }
   }
+  attr {
+    key: "U"
+    value {
+      type: DT_FLOAT
+    }
+  }
 }
 node {
   name: "FeatureExtractor/MobilenetV2/expanded_conv_3/depthwise/Relu6"
   op: "Relu6"
-  input: "FeatureExtractor/MobilenetV2/expanded_conv_3/depthwise/BatchNorm/FusedBatchNorm"
+  input: "FeatureExtractor/MobilenetV2/expanded_conv_3/depthwise/BatchNorm/FusedBatchNormV3"
 }
 node {
   name: "FeatureExtractor/MobilenetV2/expanded_conv_3/project/Conv2D"
@@ -868,8 +934,8 @@ node {
   }
 }
 node {
-  name: "FeatureExtractor/MobilenetV2/expanded_conv_3/project/BatchNorm/FusedBatchNorm"
-  op: "FusedBatchNorm"
+  name: "FeatureExtractor/MobilenetV2/expanded_conv_3/project/BatchNorm/FusedBatchNormV3"
+  op: "FusedBatchNormV3"
   input: "FeatureExtractor/MobilenetV2/expanded_conv_3/project/Conv2D"
   input: "FeatureExtractor/MobilenetV2/expanded_conv_3/project/BatchNorm/gamma"
   input: "FeatureExtractor/MobilenetV2/expanded_conv_3/project/BatchNorm/beta"
@@ -887,11 +953,17 @@ node {
       f: 0.001
     }
   }
+  attr {
+    key: "U"
+    value {
+      type: DT_FLOAT
+    }
+  }
 }
 node {
   name: "FeatureExtractor/MobilenetV2/expanded_conv_3/output"
   op: "Identity"
-  input: "FeatureExtractor/MobilenetV2/expanded_conv_3/project/BatchNorm/FusedBatchNorm"
+  input: "FeatureExtractor/MobilenetV2/expanded_conv_3/project/BatchNorm/FusedBatchNormV3"
 }
 node {
   name: "FeatureExtractor/MobilenetV2/expanded_conv_4/expand/Conv2D"
@@ -941,8 +1013,8 @@ node {
   }
 }
 node {
-  name: "FeatureExtractor/MobilenetV2/expanded_conv_4/expand/BatchNorm/FusedBatchNorm"
-  op: "FusedBatchNorm"
+  name: "FeatureExtractor/MobilenetV2/expanded_conv_4/expand/BatchNorm/FusedBatchNormV3"
+  op: "FusedBatchNormV3"
   input: "FeatureExtractor/MobilenetV2/expanded_conv_4/expand/Conv2D"
   input: "FeatureExtractor/MobilenetV2/expanded_conv_4/expand/BatchNorm/gamma"
   input: "FeatureExtractor/MobilenetV2/expanded_conv_4/expand/BatchNorm/beta"
@@ -960,11 +1032,17 @@ node {
       f: 0.001
     }
   }
+  attr {
+    key: "U"
+    value {
+      type: DT_FLOAT
+    }
+  }
 }
 node {
   name: "FeatureExtractor/MobilenetV2/expanded_conv_4/expand/Relu6"
   op: "Relu6"
-  input: "FeatureExtractor/MobilenetV2/expanded_conv_4/expand/BatchNorm/FusedBatchNorm"
+  input: "FeatureExtractor/MobilenetV2/expanded_conv_4/expand/BatchNorm/FusedBatchNormV3"
 }
 node {
   name: "FeatureExtractor/MobilenetV2/expanded_conv_4/depthwise/depthwise"
@@ -1007,8 +1085,8 @@ node {
   }
 }
 node {
-  name: "FeatureExtractor/MobilenetV2/expanded_conv_4/depthwise/BatchNorm/FusedBatchNorm"
-  op: "FusedBatchNorm"
+  name: "FeatureExtractor/MobilenetV2/expanded_conv_4/depthwise/BatchNorm/FusedBatchNormV3"
+  op: "FusedBatchNormV3"
   input: "FeatureExtractor/MobilenetV2/expanded_conv_4/depthwise/depthwise"
   input: "FeatureExtractor/MobilenetV2/expanded_conv_4/depthwise/BatchNorm/gamma"
   input: "FeatureExtractor/MobilenetV2/expanded_conv_4/depthwise/BatchNorm/beta"
@@ -1026,11 +1104,17 @@ node {
       f: 0.001
     }
   }
+  attr {
+    key: "U"
+    value {
+      type: DT_FLOAT
+    }
+  }
 }
 node {
   name: "FeatureExtractor/MobilenetV2/expanded_conv_4/depthwise/Relu6"
   op: "Relu6"
-  input: "FeatureExtractor/MobilenetV2/expanded_conv_4/depthwise/BatchNorm/FusedBatchNorm"
+  input: "FeatureExtractor/MobilenetV2/expanded_conv_4/depthwise/BatchNorm/FusedBatchNormV3"
 }
 node {
   name: "FeatureExtractor/MobilenetV2/expanded_conv_4/project/Conv2D"
@@ -1080,8 +1164,8 @@ node {
   }
 }
 node {
-  name: "FeatureExtractor/MobilenetV2/expanded_conv_4/project/BatchNorm/FusedBatchNorm"
-  op: "FusedBatchNorm"
+  name: "FeatureExtractor/MobilenetV2/expanded_conv_4/project/BatchNorm/FusedBatchNormV3"
+  op: "FusedBatchNormV3"
   input: "FeatureExtractor/MobilenetV2/expanded_conv_4/project/Conv2D"
   input: "FeatureExtractor/MobilenetV2/expanded_conv_4/project/BatchNorm/gamma"
   input: "FeatureExtractor/MobilenetV2/expanded_conv_4/project/BatchNorm/beta"
@@ -1099,11 +1183,17 @@ node {
       f: 0.001
     }
   }
+  attr {
+    key: "U"
+    value {
+      type: DT_FLOAT
+    }
+  }
 }
 node {
   name: "FeatureExtractor/MobilenetV2/expanded_conv_4/add"
-  op: "Add"
-  input: "FeatureExtractor/MobilenetV2/expanded_conv_4/project/BatchNorm/FusedBatchNorm"
+  op: "AddV2"
+  input: "FeatureExtractor/MobilenetV2/expanded_conv_4/project/BatchNorm/FusedBatchNormV3"
   input: "FeatureExtractor/MobilenetV2/expanded_conv_3/output"
 }
 node {
@@ -1159,8 +1249,8 @@ node {
   }
 }
 node {
-  name: "FeatureExtractor/MobilenetV2/expanded_conv_5/expand/BatchNorm/FusedBatchNorm"
-  op: "FusedBatchNorm"
+  name: "FeatureExtractor/MobilenetV2/expanded_conv_5/expand/BatchNorm/FusedBatchNormV3"
+  op: "FusedBatchNormV3"
   input: "FeatureExtractor/MobilenetV2/expanded_conv_5/expand/Conv2D"
   input: "FeatureExtractor/MobilenetV2/expanded_conv_5/expand/BatchNorm/gamma"
   input: "FeatureExtractor/MobilenetV2/expanded_conv_5/expand/BatchNorm/beta"
@@ -1178,11 +1268,17 @@ node {
       f: 0.001
     }
   }
+  attr {
+    key: "U"
+    value {
+      type: DT_FLOAT
+    }
+  }
 }
 node {
   name: "FeatureExtractor/MobilenetV2/expanded_conv_5/expand/Relu6"
   op: "Relu6"
-  input: "FeatureExtractor/MobilenetV2/expanded_conv_5/expand/BatchNorm/FusedBatchNorm"
+  input: "FeatureExtractor/MobilenetV2/expanded_conv_5/expand/BatchNorm/FusedBatchNormV3"
 }
 node {
   name: "FeatureExtractor/MobilenetV2/expanded_conv_5/depthwise/depthwise"
@@ -1225,8 +1321,8 @@ node {
   }
 }
 node {
-  name: "FeatureExtractor/MobilenetV2/expanded_conv_5/depthwise/BatchNorm/FusedBatchNorm"
-  op: "FusedBatchNorm"
+  name: "FeatureExtractor/MobilenetV2/expanded_conv_5/depthwise/BatchNorm/FusedBatchNormV3"
+  op: "FusedBatchNormV3"
   input: "FeatureExtractor/MobilenetV2/expanded_conv_5/depthwise/depthwise"
   input: "FeatureExtractor/MobilenetV2/expanded_conv_5/depthwise/BatchNorm/gamma"
   input: "FeatureExtractor/MobilenetV2/expanded_conv_5/depthwise/BatchNorm/beta"
@@ -1244,11 +1340,17 @@ node {
       f: 0.001
     }
   }
+  attr {
+    key: "U"
+    value {
+      type: DT_FLOAT
+    }
+  }
 }
 node {
   name: "FeatureExtractor/MobilenetV2/expanded_conv_5/depthwise/Relu6"
   op: "Relu6"
-  input: "FeatureExtractor/MobilenetV2/expanded_conv_5/depthwise/BatchNorm/FusedBatchNorm"
+  input: "FeatureExtractor/MobilenetV2/expanded_conv_5/depthwise/BatchNorm/FusedBatchNormV3"
 }
 node {
   name: "FeatureExtractor/MobilenetV2/expanded_conv_5/project/Conv2D"
@@ -1298,8 +1400,8 @@ node {
   }
 }
 node {
-  name: "FeatureExtractor/MobilenetV2/expanded_conv_5/project/BatchNorm/FusedBatchNorm"
-  op: "FusedBatchNorm"
+  name: "FeatureExtractor/MobilenetV2/expanded_conv_5/project/BatchNorm/FusedBatchNormV3"
+  op: "FusedBatchNormV3"
   input: "FeatureExtractor/MobilenetV2/expanded_conv_5/project/Conv2D"
   input: "FeatureExtractor/MobilenetV2/expanded_conv_5/project/BatchNorm/gamma"
   input: "FeatureExtractor/MobilenetV2/expanded_conv_5/project/BatchNorm/beta"
@@ -1317,11 +1419,17 @@ node {
       f: 0.001
     }
   }
+  attr {
+    key: "U"
+    value {
+      type: DT_FLOAT
+    }
+  }
 }
 node {
   name: "FeatureExtractor/MobilenetV2/expanded_conv_5/add"
-  op: "Add"
-  input: "FeatureExtractor/MobilenetV2/expanded_conv_5/project/BatchNorm/FusedBatchNorm"
+  op: "AddV2"
+  input: "FeatureExtractor/MobilenetV2/expanded_conv_5/project/BatchNorm/FusedBatchNormV3"
   input: "FeatureExtractor/MobilenetV2/expanded_conv_5/input"
 }
 node {
@@ -1377,8 +1485,8 @@ node {
   }
 }
 node {
-  name: "FeatureExtractor/MobilenetV2/expanded_conv_6/expand/BatchNorm/FusedBatchNorm"
-  op: "FusedBatchNorm"
+  name: "FeatureExtractor/MobilenetV2/expanded_conv_6/expand/BatchNorm/FusedBatchNormV3"
+  op: "FusedBatchNormV3"
   input: "FeatureExtractor/MobilenetV2/expanded_conv_6/expand/Conv2D"
   input: "FeatureExtractor/MobilenetV2/expanded_conv_6/expand/BatchNorm/gamma"
   input: "FeatureExtractor/MobilenetV2/expanded_conv_6/expand/BatchNorm/beta"
@@ -1396,11 +1504,17 @@ node {
       f: 0.001
     }
   }
+  attr {
+    key: "U"
+    value {
+      type: DT_FLOAT
+    }
+  }
 }
 node {
   name: "FeatureExtractor/MobilenetV2/expanded_conv_6/expand/Relu6"
   op: "Relu6"
-  input: "FeatureExtractor/MobilenetV2/expanded_conv_6/expand/BatchNorm/FusedBatchNorm"
+  input: "FeatureExtractor/MobilenetV2/expanded_conv_6/expand/BatchNorm/FusedBatchNormV3"
 }
 node {
   name: "FeatureExtractor/MobilenetV2/expanded_conv_6/depthwise/depthwise"
@@ -1443,8 +1557,8 @@ node {
   }
 }
 node {
-  name: "FeatureExtractor/MobilenetV2/expanded_conv_6/depthwise/BatchNorm/FusedBatchNorm"
-  op: "FusedBatchNorm"
+  name: "FeatureExtractor/MobilenetV2/expanded_conv_6/depthwise/BatchNorm/FusedBatchNormV3"
+  op: "FusedBatchNormV3"
   input: "FeatureExtractor/MobilenetV2/expanded_conv_6/depthwise/depthwise"
   input: "FeatureExtractor/MobilenetV2/expanded_conv_6/depthwise/BatchNorm/gamma"
   input: "FeatureExtractor/MobilenetV2/expanded_conv_6/depthwise/BatchNorm/beta"
@@ -1462,11 +1576,17 @@ node {
       f: 0.001
     }
   }
+  attr {
+    key: "U"
+    value {
+      type: DT_FLOAT
+    }
+  }
 }
 node {
   name: "FeatureExtractor/MobilenetV2/expanded_conv_6/depthwise/Relu6"
   op: "Relu6"
-  input: "FeatureExtractor/MobilenetV2/expanded_conv_6/depthwise/BatchNorm/FusedBatchNorm"
+  input: "FeatureExtractor/MobilenetV2/expanded_conv_6/depthwise/BatchNorm/FusedBatchNormV3"
 }
 node {
   name: "FeatureExtractor/MobilenetV2/expanded_conv_6/project/Conv2D"
@@ -1516,8 +1636,8 @@ node {
   }
 }
 node {
-  name: "FeatureExtractor/MobilenetV2/expanded_conv_6/project/BatchNorm/FusedBatchNorm"
-  op: "FusedBatchNorm"
+  name: "FeatureExtractor/MobilenetV2/expanded_conv_6/project/BatchNorm/FusedBatchNormV3"
+  op: "FusedBatchNormV3"
   input: "FeatureExtractor/MobilenetV2/expanded_conv_6/project/Conv2D"
   input: "FeatureExtractor/MobilenetV2/expanded_conv_6/project/BatchNorm/gamma"
   input: "FeatureExtractor/MobilenetV2/expanded_conv_6/project/BatchNorm/beta"
@@ -1535,11 +1655,17 @@ node {
       f: 0.001
     }
   }
+  attr {
+    key: "U"
+    value {
+      type: DT_FLOAT
+    }
+  }
 }
 node {
   name: "FeatureExtractor/MobilenetV2/expanded_conv_6/output"
   op: "Identity"
-  input: "FeatureExtractor/MobilenetV2/expanded_conv_6/project/BatchNorm/FusedBatchNorm"
+  input: "FeatureExtractor/MobilenetV2/expanded_conv_6/project/BatchNorm/FusedBatchNormV3"
 }
 node {
   name: "FeatureExtractor/MobilenetV2/expanded_conv_7/expand/Conv2D"
@@ -1589,8 +1715,8 @@ node {
   }
 }
 node {
-  name: "FeatureExtractor/MobilenetV2/expanded_conv_7/expand/BatchNorm/FusedBatchNorm"
-  op: "FusedBatchNorm"
+  name: "FeatureExtractor/MobilenetV2/expanded_conv_7/expand/BatchNorm/FusedBatchNormV3"
+  op: "FusedBatchNormV3"
   input: "FeatureExtractor/MobilenetV2/expanded_conv_7/expand/Conv2D"
   input: "FeatureExtractor/MobilenetV2/expanded_conv_7/expand/BatchNorm/gamma"
   input: "FeatureExtractor/MobilenetV2/expanded_conv_7/expand/BatchNorm/beta"
@@ -1608,11 +1734,17 @@ node {
       f: 0.001
     }
   }
+  attr {
+    key: "U"
+    value {
+      type: DT_FLOAT
+    }
+  }
 }
 node {
   name: "FeatureExtractor/MobilenetV2/expanded_conv_7/expand/Relu6"
   op: "Relu6"
-  input: "FeatureExtractor/MobilenetV2/expanded_conv_7/expand/BatchNorm/FusedBatchNorm"
+  input: "FeatureExtractor/MobilenetV2/expanded_conv_7/expand/BatchNorm/FusedBatchNormV3"
 }
 node {
   name: "FeatureExtractor/MobilenetV2/expanded_conv_7/depthwise/depthwise"
@@ -1655,8 +1787,8 @@ node {
   }
 }
 node {
-  name: "FeatureExtractor/MobilenetV2/expanded_conv_7/depthwise/BatchNorm/FusedBatchNorm"
-  op: "FusedBatchNorm"
+  name: "FeatureExtractor/MobilenetV2/expanded_conv_7/depthwise/BatchNorm/FusedBatchNormV3"
+  op: "FusedBatchNormV3"
   input: "FeatureExtractor/MobilenetV2/expanded_conv_7/depthwise/depthwise"
   input: "FeatureExtractor/MobilenetV2/expanded_conv_7/depthwise/BatchNorm/gamma"
   input: "FeatureExtractor/MobilenetV2/expanded_conv_7/depthwise/BatchNorm/beta"
@@ -1674,11 +1806,17 @@ node {
       f: 0.001
     }
   }
+  attr {
+    key: "U"
+    value {
+      type: DT_FLOAT
+    }
+  }
 }
 node {
   name: "FeatureExtractor/MobilenetV2/expanded_conv_7/depthwise/Relu6"
   op: "Relu6"
-  input: "FeatureExtractor/MobilenetV2/expanded_conv_7/depthwise/BatchNorm/FusedBatchNorm"
+  input: "FeatureExtractor/MobilenetV2/expanded_conv_7/depthwise/BatchNorm/FusedBatchNormV3"
 }
 node {
   name: "FeatureExtractor/MobilenetV2/expanded_conv_7/project/Conv2D"
@@ -1728,8 +1866,8 @@ node {
   }
 }
 node {
-  name: "FeatureExtractor/MobilenetV2/expanded_conv_7/project/BatchNorm/FusedBatchNorm"
-  op: "FusedBatchNorm"
+  name: "FeatureExtractor/MobilenetV2/expanded_conv_7/project/BatchNorm/FusedBatchNormV3"
+  op: "FusedBatchNormV3"
   input: "FeatureExtractor/MobilenetV2/expanded_conv_7/project/Conv2D"
   input: "FeatureExtractor/MobilenetV2/expanded_conv_7/project/BatchNorm/gamma"
   input: "FeatureExtractor/MobilenetV2/expanded_conv_7/project/BatchNorm/beta"
@@ -1747,11 +1885,17 @@ node {
       f: 0.001
     }
   }
+  attr {
+    key: "U"
+    value {
+      type: DT_FLOAT
+    }
+  }
 }
 node {
   name: "FeatureExtractor/MobilenetV2/expanded_conv_7/add"
-  op: "Add"
-  input: "FeatureExtractor/MobilenetV2/expanded_conv_7/project/BatchNorm/FusedBatchNorm"
+  op: "AddV2"
+  input: "FeatureExtractor/MobilenetV2/expanded_conv_7/project/BatchNorm/FusedBatchNormV3"
   input: "FeatureExtractor/MobilenetV2/expanded_conv_6/output"
 }
 node {
@@ -1807,8 +1951,8 @@ node {
   }
 }
 node {
-  name: "FeatureExtractor/MobilenetV2/expanded_conv_8/expand/BatchNorm/FusedBatchNorm"
-  op: "FusedBatchNorm"
+  name: "FeatureExtractor/MobilenetV2/expanded_conv_8/expand/BatchNorm/FusedBatchNormV3"
+  op: "FusedBatchNormV3"
   input: "FeatureExtractor/MobilenetV2/expanded_conv_8/expand/Conv2D"
   input: "FeatureExtractor/MobilenetV2/expanded_conv_8/expand/BatchNorm/gamma"
   input: "FeatureExtractor/MobilenetV2/expanded_conv_8/expand/BatchNorm/beta"
@@ -1826,11 +1970,17 @@ node {
       f: 0.001
     }
   }
+  attr {
+    key: "U"
+    value {
+      type: DT_FLOAT
+    }
+  }
 }
 node {
   name: "FeatureExtractor/MobilenetV2/expanded_conv_8/expand/Relu6"
   op: "Relu6"
-  input: "FeatureExtractor/MobilenetV2/expanded_conv_8/expand/BatchNorm/FusedBatchNorm"
+  input: "FeatureExtractor/MobilenetV2/expanded_conv_8/expand/BatchNorm/FusedBatchNormV3"
 }
 node {
   name: "FeatureExtractor/MobilenetV2/expanded_conv_8/depthwise/depthwise"
@@ -1873,8 +2023,8 @@ node {
   }
 }
 node {
-  name: "FeatureExtractor/MobilenetV2/expanded_conv_8/depthwise/BatchNorm/FusedBatchNorm"
-  op: "FusedBatchNorm"
+  name: "FeatureExtractor/MobilenetV2/expanded_conv_8/depthwise/BatchNorm/FusedBatchNormV3"
+  op: "FusedBatchNormV3"
   input: "FeatureExtractor/MobilenetV2/expanded_conv_8/depthwise/depthwise"
   input: "FeatureExtractor/MobilenetV2/expanded_conv_8/depthwise/BatchNorm/gamma"
   input: "FeatureExtractor/MobilenetV2/expanded_conv_8/depthwise/BatchNorm/beta"
@@ -1892,11 +2042,17 @@ node {
       f: 0.001
     }
   }
+  attr {
+    key: "U"
+    value {
+      type: DT_FLOAT
+    }
+  }
 }
 node {
   name: "FeatureExtractor/MobilenetV2/expanded_conv_8/depthwise/Relu6"
   op: "Relu6"
-  input: "FeatureExtractor/MobilenetV2/expanded_conv_8/depthwise/BatchNorm/FusedBatchNorm"
+  input: "FeatureExtractor/MobilenetV2/expanded_conv_8/depthwise/BatchNorm/FusedBatchNormV3"
 }
 node {
   name: "FeatureExtractor/MobilenetV2/expanded_conv_8/project/Conv2D"
@@ -1946,8 +2102,8 @@ node {
   }
 }
 node {
-  name: "FeatureExtractor/MobilenetV2/expanded_conv_8/project/BatchNorm/FusedBatchNorm"
-  op: "FusedBatchNorm"
+  name: "FeatureExtractor/MobilenetV2/expanded_conv_8/project/BatchNorm/FusedBatchNormV3"
+  op: "FusedBatchNormV3"
   input: "FeatureExtractor/MobilenetV2/expanded_conv_8/project/Conv2D"
   input: "FeatureExtractor/MobilenetV2/expanded_conv_8/project/BatchNorm/gamma"
   input: "FeatureExtractor/MobilenetV2/expanded_conv_8/project/BatchNorm/beta"
@@ -1965,11 +2121,17 @@ node {
       f: 0.001
     }
   }
+  attr {
+    key: "U"
+    value {
+      type: DT_FLOAT
+    }
+  }
 }
 node {
   name: "FeatureExtractor/MobilenetV2/expanded_conv_8/add"
-  op: "Add"
-  input: "FeatureExtractor/MobilenetV2/expanded_conv_8/project/BatchNorm/FusedBatchNorm"
+  op: "AddV2"
+  input: "FeatureExtractor/MobilenetV2/expanded_conv_8/project/BatchNorm/FusedBatchNormV3"
   input: "FeatureExtractor/MobilenetV2/expanded_conv_8/input"
 }
 node {
@@ -2025,8 +2187,8 @@ node {
   }
 }
 node {
-  name: "FeatureExtractor/MobilenetV2/expanded_conv_9/expand/BatchNorm/FusedBatchNorm"
-  op: "FusedBatchNorm"
+  name: "FeatureExtractor/MobilenetV2/expanded_conv_9/expand/BatchNorm/FusedBatchNormV3"
+  op: "FusedBatchNormV3"
   input: "FeatureExtractor/MobilenetV2/expanded_conv_9/expand/Conv2D"
   input: "FeatureExtractor/MobilenetV2/expanded_conv_9/expand/BatchNorm/gamma"
   input: "FeatureExtractor/MobilenetV2/expanded_conv_9/expand/BatchNorm/beta"
@@ -2044,11 +2206,17 @@ node {
       f: 0.001
     }
   }
+  attr {
+    key: "U"
+    value {
+      type: DT_FLOAT
+    }
+  }
 }
 node {
   name: "FeatureExtractor/MobilenetV2/expanded_conv_9/expand/Relu6"
   op: "Relu6"
-  input: "FeatureExtractor/MobilenetV2/expanded_conv_9/expand/BatchNorm/FusedBatchNorm"
+  input: "FeatureExtractor/MobilenetV2/expanded_conv_9/expand/BatchNorm/FusedBatchNormV3"
 }
 node {
   name: "FeatureExtractor/MobilenetV2/expanded_conv_9/depthwise/depthwise"
@@ -2091,8 +2259,8 @@ node {
   }
 }
 node {
-  name: "FeatureExtractor/MobilenetV2/expanded_conv_9/depthwise/BatchNorm/FusedBatchNorm"
-  op: "FusedBatchNorm"
+  name: "FeatureExtractor/MobilenetV2/expanded_conv_9/depthwise/BatchNorm/FusedBatchNormV3"
+  op: "FusedBatchNormV3"
   input: "FeatureExtractor/MobilenetV2/expanded_conv_9/depthwise/depthwise"
   input: "FeatureExtractor/MobilenetV2/expanded_conv_9/depthwise/BatchNorm/gamma"
   input: "FeatureExtractor/MobilenetV2/expanded_conv_9/depthwise/BatchNorm/beta"
@@ -2110,11 +2278,17 @@ node {
       f: 0.001
     }
   }
+  attr {
+    key: "U"
+    value {
+      type: DT_FLOAT
+    }
+  }
 }
 node {
   name: "FeatureExtractor/MobilenetV2/expanded_conv_9/depthwise/Relu6"
   op: "Relu6"
-  input: "FeatureExtractor/MobilenetV2/expanded_conv_9/depthwise/BatchNorm/FusedBatchNorm"
+  input: "FeatureExtractor/MobilenetV2/expanded_conv_9/depthwise/BatchNorm/FusedBatchNormV3"
 }
 node {
   name: "FeatureExtractor/MobilenetV2/expanded_conv_9/project/Conv2D"
@@ -2164,8 +2338,8 @@ node {
   }
 }
 node {
-  name: "FeatureExtractor/MobilenetV2/expanded_conv_9/project/BatchNorm/FusedBatchNorm"
-  op: "FusedBatchNorm"
+  name: "FeatureExtractor/MobilenetV2/expanded_conv_9/project/BatchNorm/FusedBatchNormV3"
+  op: "FusedBatchNormV3"
   input: "FeatureExtractor/MobilenetV2/expanded_conv_9/project/Conv2D"
   input: "FeatureExtractor/MobilenetV2/expanded_conv_9/project/BatchNorm/gamma"
   input: "FeatureExtractor/MobilenetV2/expanded_conv_9/project/BatchNorm/beta"
@@ -2183,11 +2357,17 @@ node {
       f: 0.001
     }
   }
+  attr {
+    key: "U"
+    value {
+      type: DT_FLOAT
+    }
+  }
 }
 node {
   name: "FeatureExtractor/MobilenetV2/expanded_conv_9/add"
-  op: "Add"
-  input: "FeatureExtractor/MobilenetV2/expanded_conv_9/project/BatchNorm/FusedBatchNorm"
+  op: "AddV2"
+  input: "FeatureExtractor/MobilenetV2/expanded_conv_9/project/BatchNorm/FusedBatchNormV3"
   input: "FeatureExtractor/MobilenetV2/expanded_conv_9/input"
 }
 node {
@@ -2243,8 +2423,8 @@ node {
   }
 }
 node {
-  name: "FeatureExtractor/MobilenetV2/expanded_conv_10/expand/BatchNorm/FusedBatchNorm"
-  op: "FusedBatchNorm"
+  name: "FeatureExtractor/MobilenetV2/expanded_conv_10/expand/BatchNorm/FusedBatchNormV3"
+  op: "FusedBatchNormV3"
   input: "FeatureExtractor/MobilenetV2/expanded_conv_10/expand/Conv2D"
   input: "FeatureExtractor/MobilenetV2/expanded_conv_10/expand/BatchNorm/gamma"
   input: "FeatureExtractor/MobilenetV2/expanded_conv_10/expand/BatchNorm/beta"
@@ -2262,11 +2442,17 @@ node {
       f: 0.001
     }
   }
+  attr {
+    key: "U"
+    value {
+      type: DT_FLOAT
+    }
+  }
 }
 node {
   name: "FeatureExtractor/MobilenetV2/expanded_conv_10/expand/Relu6"
   op: "Relu6"
-  input: "FeatureExtractor/MobilenetV2/expanded_conv_10/expand/BatchNorm/FusedBatchNorm"
+  input: "FeatureExtractor/MobilenetV2/expanded_conv_10/expand/BatchNorm/FusedBatchNormV3"
 }
 node {
   name: "FeatureExtractor/MobilenetV2/expanded_conv_10/depthwise/depthwise"
@@ -2309,8 +2495,8 @@ node {
   }
 }
 node {
-  name: "FeatureExtractor/MobilenetV2/expanded_conv_10/depthwise/BatchNorm/FusedBatchNorm"
-  op: "FusedBatchNorm"
+  name: "FeatureExtractor/MobilenetV2/expanded_conv_10/depthwise/BatchNorm/FusedBatchNormV3"
+  op: "FusedBatchNormV3"
   input: "FeatureExtractor/MobilenetV2/expanded_conv_10/depthwise/depthwise"
   input: "FeatureExtractor/MobilenetV2/expanded_conv_10/depthwise/BatchNorm/gamma"
   input: "FeatureExtractor/MobilenetV2/expanded_conv_10/depthwise/BatchNorm/beta"
@@ -2328,11 +2514,17 @@ node {
       f: 0.001
     }
   }
+  attr {
+    key: "U"
+    value {
+      type: DT_FLOAT
+    }
+  }
 }
 node {
   name: "FeatureExtractor/MobilenetV2/expanded_conv_10/depthwise/Relu6"
   op: "Relu6"
-  input: "FeatureExtractor/MobilenetV2/expanded_conv_10/depthwise/BatchNorm/FusedBatchNorm"
+  input: "FeatureExtractor/MobilenetV2/expanded_conv_10/depthwise/BatchNorm/FusedBatchNormV3"
 }
 node {
   name: "FeatureExtractor/MobilenetV2/expanded_conv_10/project/Conv2D"
@@ -2382,8 +2574,8 @@ node {
   }
 }
 node {
-  name: "FeatureExtractor/MobilenetV2/expanded_conv_10/project/BatchNorm/FusedBatchNorm"
-  op: "FusedBatchNorm"
+  name: "FeatureExtractor/MobilenetV2/expanded_conv_10/project/BatchNorm/FusedBatchNormV3"
+  op: "FusedBatchNormV3"
   input: "FeatureExtractor/MobilenetV2/expanded_conv_10/project/Conv2D"
   input: "FeatureExtractor/MobilenetV2/expanded_conv_10/project/BatchNorm/gamma"
   input: "FeatureExtractor/MobilenetV2/expanded_conv_10/project/BatchNorm/beta"
@@ -2401,11 +2593,17 @@ node {
       f: 0.001
     }
   }
+  attr {
+    key: "U"
+    value {
+      type: DT_FLOAT
+    }
+  }
 }
 node {
   name: "FeatureExtractor/MobilenetV2/expanded_conv_10/output"
   op: "Identity"
-  input: "FeatureExtractor/MobilenetV2/expanded_conv_10/project/BatchNorm/FusedBatchNorm"
+  input: "FeatureExtractor/MobilenetV2/expanded_conv_10/project/BatchNorm/FusedBatchNormV3"
 }
 node {
   name: "FeatureExtractor/MobilenetV2/expanded_conv_11/expand/Conv2D"
@@ -2455,8 +2653,8 @@ node {
   }
 }
 node {
-  name: "FeatureExtractor/MobilenetV2/expanded_conv_11/expand/BatchNorm/FusedBatchNorm"
-  op: "FusedBatchNorm"
+  name: "FeatureExtractor/MobilenetV2/expanded_conv_11/expand/BatchNorm/FusedBatchNormV3"
+  op: "FusedBatchNormV3"
   input: "FeatureExtractor/MobilenetV2/expanded_conv_11/expand/Conv2D"
   input: "FeatureExtractor/MobilenetV2/expanded_conv_11/expand/BatchNorm/gamma"
   input: "FeatureExtractor/MobilenetV2/expanded_conv_11/expand/BatchNorm/beta"
@@ -2474,11 +2672,17 @@ node {
       f: 0.001
     }
   }
+  attr {
+    key: "U"
+    value {
+      type: DT_FLOAT
+    }
+  }
 }
 node {
   name: "FeatureExtractor/MobilenetV2/expanded_conv_11/expand/Relu6"
   op: "Relu6"
-  input: "FeatureExtractor/MobilenetV2/expanded_conv_11/expand/BatchNorm/FusedBatchNorm"
+  input: "FeatureExtractor/MobilenetV2/expanded_conv_11/expand/BatchNorm/FusedBatchNormV3"
 }
 node {
   name: "FeatureExtractor/MobilenetV2/expanded_conv_11/depthwise/depthwise"
@@ -2521,8 +2725,8 @@ node {
   }
 }
 node {
-  name: "FeatureExtractor/MobilenetV2/expanded_conv_11/depthwise/BatchNorm/FusedBatchNorm"
-  op: "FusedBatchNorm"
+  name: "FeatureExtractor/MobilenetV2/expanded_conv_11/depthwise/BatchNorm/FusedBatchNormV3"
+  op: "FusedBatchNormV3"
   input: "FeatureExtractor/MobilenetV2/expanded_conv_11/depthwise/depthwise"
   input: "FeatureExtractor/MobilenetV2/expanded_conv_11/depthwise/BatchNorm/gamma"
   input: "FeatureExtractor/MobilenetV2/expanded_conv_11/depthwise/BatchNorm/beta"
@@ -2540,11 +2744,17 @@ node {
       f: 0.001
     }
   }
+  attr {
+    key: "U"
+    value {
+      type: DT_FLOAT
+    }
+  }
 }
 node {
   name: "FeatureExtractor/MobilenetV2/expanded_conv_11/depthwise/Relu6"
   op: "Relu6"
-  input: "FeatureExtractor/MobilenetV2/expanded_conv_11/depthwise/BatchNorm/FusedBatchNorm"
+  input: "FeatureExtractor/MobilenetV2/expanded_conv_11/depthwise/BatchNorm/FusedBatchNormV3"
 }
 node {
   name: "FeatureExtractor/MobilenetV2/expanded_conv_11/project/Conv2D"
@@ -2594,8 +2804,8 @@ node {
   }
 }
 node {
-  name: "FeatureExtractor/MobilenetV2/expanded_conv_11/project/BatchNorm/FusedBatchNorm"
-  op: "FusedBatchNorm"
+  name: "FeatureExtractor/MobilenetV2/expanded_conv_11/project/BatchNorm/FusedBatchNormV3"
+  op: "FusedBatchNormV3"
   input: "FeatureExtractor/MobilenetV2/expanded_conv_11/project/Conv2D"
   input: "FeatureExtractor/MobilenetV2/expanded_conv_11/project/BatchNorm/gamma"
   input: "FeatureExtractor/MobilenetV2/expanded_conv_11/project/BatchNorm/beta"
@@ -2613,11 +2823,17 @@ node {
       f: 0.001
     }
   }
+  attr {
+    key: "U"
+    value {
+      type: DT_FLOAT
+    }
+  }
 }
 node {
   name: "FeatureExtractor/MobilenetV2/expanded_conv_11/add"
-  op: "Add"
-  input: "FeatureExtractor/MobilenetV2/expanded_conv_11/project/BatchNorm/FusedBatchNorm"
+  op: "AddV2"
+  input: "FeatureExtractor/MobilenetV2/expanded_conv_11/project/BatchNorm/FusedBatchNormV3"
   input: "FeatureExtractor/MobilenetV2/expanded_conv_10/output"
 }
 node {
@@ -2673,8 +2889,8 @@ node {
   }
 }
 node {
-  name: "FeatureExtractor/MobilenetV2/expanded_conv_12/expand/BatchNorm/FusedBatchNorm"
-  op: "FusedBatchNorm"
+  name: "FeatureExtractor/MobilenetV2/expanded_conv_12/expand/BatchNorm/FusedBatchNormV3"
+  op: "FusedBatchNormV3"
   input: "FeatureExtractor/MobilenetV2/expanded_conv_12/expand/Conv2D"
   input: "FeatureExtractor/MobilenetV2/expanded_conv_12/expand/BatchNorm/gamma"
   input: "FeatureExtractor/MobilenetV2/expanded_conv_12/expand/BatchNorm/beta"
@@ -2692,11 +2908,17 @@ node {
       f: 0.001
     }
   }
+  attr {
+    key: "U"
+    value {
+      type: DT_FLOAT
+    }
+  }
 }
 node {
   name: "FeatureExtractor/MobilenetV2/expanded_conv_12/expand/Relu6"
   op: "Relu6"
-  input: "FeatureExtractor/MobilenetV2/expanded_conv_12/expand/BatchNorm/FusedBatchNorm"
+  input: "FeatureExtractor/MobilenetV2/expanded_conv_12/expand/BatchNorm/FusedBatchNormV3"
 }
 node {
   name: "FeatureExtractor/MobilenetV2/expanded_conv_12/depthwise/depthwise"
@@ -2739,8 +2961,8 @@ node {
   }
 }
 node {
-  name: "FeatureExtractor/MobilenetV2/expanded_conv_12/depthwise/BatchNorm/FusedBatchNorm"
-  op: "FusedBatchNorm"
+  name: "FeatureExtractor/MobilenetV2/expanded_conv_12/depthwise/BatchNorm/FusedBatchNormV3"
+  op: "FusedBatchNormV3"
   input: "FeatureExtractor/MobilenetV2/expanded_conv_12/depthwise/depthwise"
   input: "FeatureExtractor/MobilenetV2/expanded_conv_12/depthwise/BatchNorm/gamma"
   input: "FeatureExtractor/MobilenetV2/expanded_conv_12/depthwise/BatchNorm/beta"
@@ -2758,11 +2980,17 @@ node {
       f: 0.001
     }
   }
+  attr {
+    key: "U"
+    value {
+      type: DT_FLOAT
+    }
+  }
 }
 node {
   name: "FeatureExtractor/MobilenetV2/expanded_conv_12/depthwise/Relu6"
   op: "Relu6"
-  input: "FeatureExtractor/MobilenetV2/expanded_conv_12/depthwise/BatchNorm/FusedBatchNorm"
+  input: "FeatureExtractor/MobilenetV2/expanded_conv_12/depthwise/BatchNorm/FusedBatchNormV3"
 }
 node {
   name: "FeatureExtractor/MobilenetV2/expanded_conv_12/project/Conv2D"
@@ -2812,8 +3040,8 @@ node {
   }
 }
 node {
-  name: "FeatureExtractor/MobilenetV2/expanded_conv_12/project/BatchNorm/FusedBatchNorm"
-  op: "FusedBatchNorm"
+  name: "FeatureExtractor/MobilenetV2/expanded_conv_12/project/BatchNorm/FusedBatchNormV3"
+  op: "FusedBatchNormV3"
   input: "FeatureExtractor/MobilenetV2/expanded_conv_12/project/Conv2D"
   input: "FeatureExtractor/MobilenetV2/expanded_conv_12/project/BatchNorm/gamma"
   input: "FeatureExtractor/MobilenetV2/expanded_conv_12/project/BatchNorm/beta"
@@ -2831,11 +3059,17 @@ node {
       f: 0.001
     }
   }
+  attr {
+    key: "U"
+    value {
+      type: DT_FLOAT
+    }
+  }
 }
 node {
   name: "FeatureExtractor/MobilenetV2/expanded_conv_12/add"
-  op: "Add"
-  input: "FeatureExtractor/MobilenetV2/expanded_conv_12/project/BatchNorm/FusedBatchNorm"
+  op: "AddV2"
+  input: "FeatureExtractor/MobilenetV2/expanded_conv_12/project/BatchNorm/FusedBatchNormV3"
   input: "FeatureExtractor/MobilenetV2/expanded_conv_12/input"
 }
 node {
@@ -2891,8 +3125,8 @@ node {
   }
 }
 node {
-  name: "FeatureExtractor/MobilenetV2/expanded_conv_13/expand/BatchNorm/FusedBatchNorm"
-  op: "FusedBatchNorm"
+  name: "FeatureExtractor/MobilenetV2/expanded_conv_13/expand/BatchNorm/FusedBatchNormV3"
+  op: "FusedBatchNormV3"
   input: "FeatureExtractor/MobilenetV2/expanded_conv_13/expand/Conv2D"
   input: "FeatureExtractor/MobilenetV2/expanded_conv_13/expand/BatchNorm/gamma"
   input: "FeatureExtractor/MobilenetV2/expanded_conv_13/expand/BatchNorm/beta"
@@ -2910,11 +3144,17 @@ node {
       f: 0.001
     }
   }
+  attr {
+    key: "U"
+    value {
+      type: DT_FLOAT
+    }
+  }
 }
 node {
   name: "FeatureExtractor/MobilenetV2/expanded_conv_13/expand/Relu6"
   op: "Relu6"
-  input: "FeatureExtractor/MobilenetV2/expanded_conv_13/expand/BatchNorm/FusedBatchNorm"
+  input: "FeatureExtractor/MobilenetV2/expanded_conv_13/expand/BatchNorm/FusedBatchNormV3"
 }
 node {
   name: "BoxPredictor_0/ClassPredictor/Conv2D"
@@ -3081,8 +3321,8 @@ node {
   }
 }
 node {
-  name: "FeatureExtractor/MobilenetV2/expanded_conv_13/depthwise/BatchNorm/FusedBatchNorm"
-  op: "FusedBatchNorm"
+  name: "FeatureExtractor/MobilenetV2/expanded_conv_13/depthwise/BatchNorm/FusedBatchNormV3"
+  op: "FusedBatchNormV3"
   input: "FeatureExtractor/MobilenetV2/expanded_conv_13/depthwise/depthwise"
   input: "FeatureExtractor/MobilenetV2/expanded_conv_13/depthwise/BatchNorm/gamma"
   input: "FeatureExtractor/MobilenetV2/expanded_conv_13/depthwise/BatchNorm/beta"
@@ -3100,11 +3340,17 @@ node {
       f: 0.001
     }
   }
+  attr {
+    key: "U"
+    value {
+      type: DT_FLOAT
+    }
+  }
 }
 node {
   name: "FeatureExtractor/MobilenetV2/expanded_conv_13/depthwise/Relu6"
   op: "Relu6"
-  input: "FeatureExtractor/MobilenetV2/expanded_conv_13/depthwise/BatchNorm/FusedBatchNorm"
+  input: "FeatureExtractor/MobilenetV2/expanded_conv_13/depthwise/BatchNorm/FusedBatchNormV3"
 }
 node {
   name: "FeatureExtractor/MobilenetV2/expanded_conv_13/project/Conv2D"
@@ -3154,8 +3400,8 @@ node {
   }
 }
 node {
-  name: "FeatureExtractor/MobilenetV2/expanded_conv_13/project/BatchNorm/FusedBatchNorm"
-  op: "FusedBatchNorm"
+  name: "FeatureExtractor/MobilenetV2/expanded_conv_13/project/BatchNorm/FusedBatchNormV3"
+  op: "FusedBatchNormV3"
   input: "FeatureExtractor/MobilenetV2/expanded_conv_13/project/Conv2D"
   input: "FeatureExtractor/MobilenetV2/expanded_conv_13/project/BatchNorm/gamma"
   input: "FeatureExtractor/MobilenetV2/expanded_conv_13/project/BatchNorm/beta"
@@ -3173,11 +3419,17 @@ node {
       f: 0.001
     }
   }
+  attr {
+    key: "U"
+    value {
+      type: DT_FLOAT
+    }
+  }
 }
 node {
   name: "FeatureExtractor/MobilenetV2/expanded_conv_13/output"
   op: "Identity"
-  input: "FeatureExtractor/MobilenetV2/expanded_conv_13/project/BatchNorm/FusedBatchNorm"
+  input: "FeatureExtractor/MobilenetV2/expanded_conv_13/project/BatchNorm/FusedBatchNormV3"
 }
 node {
   name: "FeatureExtractor/MobilenetV2/expanded_conv_14/expand/Conv2D"
@@ -3227,8 +3479,8 @@ node {
   }
 }
 node {
-  name: "FeatureExtractor/MobilenetV2/expanded_conv_14/expand/BatchNorm/FusedBatchNorm"
-  op: "FusedBatchNorm"
+  name: "FeatureExtractor/MobilenetV2/expanded_conv_14/expand/BatchNorm/FusedBatchNormV3"
+  op: "FusedBatchNormV3"
   input: "FeatureExtractor/MobilenetV2/expanded_conv_14/expand/Conv2D"
   input: "FeatureExtractor/MobilenetV2/expanded_conv_14/expand/BatchNorm/gamma"
   input: "FeatureExtractor/MobilenetV2/expanded_conv_14/expand/BatchNorm/beta"
@@ -3246,11 +3498,17 @@ node {
       f: 0.001
     }
   }
+  attr {
+    key: "U"
+    value {
+      type: DT_FLOAT
+    }
+  }
 }
 node {
   name: "FeatureExtractor/MobilenetV2/expanded_conv_14/expand/Relu6"
   op: "Relu6"
-  input: "FeatureExtractor/MobilenetV2/expanded_conv_14/expand/BatchNorm/FusedBatchNorm"
+  input: "FeatureExtractor/MobilenetV2/expanded_conv_14/expand/BatchNorm/FusedBatchNormV3"
 }
 node {
   name: "FeatureExtractor/MobilenetV2/expanded_conv_14/depthwise/depthwise"
@@ -3293,8 +3551,8 @@ node {
   }
 }
 node {
-  name: "FeatureExtractor/MobilenetV2/expanded_conv_14/depthwise/BatchNorm/FusedBatchNorm"
-  op: "FusedBatchNorm"
+  name: "FeatureExtractor/MobilenetV2/expanded_conv_14/depthwise/BatchNorm/FusedBatchNormV3"
+  op: "FusedBatchNormV3"
   input: "FeatureExtractor/MobilenetV2/expanded_conv_14/depthwise/depthwise"
   input: "FeatureExtractor/MobilenetV2/expanded_conv_14/depthwise/BatchNorm/gamma"
   input: "FeatureExtractor/MobilenetV2/expanded_conv_14/depthwise/BatchNorm/beta"
@@ -3312,11 +3570,17 @@ node {
       f: 0.001
     }
   }
+  attr {
+    key: "U"
+    value {
+      type: DT_FLOAT
+    }
+  }
 }
 node {
   name: "FeatureExtractor/MobilenetV2/expanded_conv_14/depthwise/Relu6"
   op: "Relu6"
-  input: "FeatureExtractor/MobilenetV2/expanded_conv_14/depthwise/BatchNorm/FusedBatchNorm"
+  input: "FeatureExtractor/MobilenetV2/expanded_conv_14/depthwise/BatchNorm/FusedBatchNormV3"
 }
 node {
   name: "FeatureExtractor/MobilenetV2/expanded_conv_14/project/Conv2D"
@@ -3366,8 +3630,8 @@ node {
   }
 }
 node {
-  name: "FeatureExtractor/MobilenetV2/expanded_conv_14/project/BatchNorm/FusedBatchNorm"
-  op: "FusedBatchNorm"
+  name: "FeatureExtractor/MobilenetV2/expanded_conv_14/project/BatchNorm/FusedBatchNormV3"
+  op: "FusedBatchNormV3"
   input: "FeatureExtractor/MobilenetV2/expanded_conv_14/project/Conv2D"
   input: "FeatureExtractor/MobilenetV2/expanded_conv_14/project/BatchNorm/gamma"
   input: "FeatureExtractor/MobilenetV2/expanded_conv_14/project/BatchNorm/beta"
@@ -3385,11 +3649,17 @@ node {
       f: 0.001
     }
   }
+  attr {
+    key: "U"
+    value {
+      type: DT_FLOAT
+    }
+  }
 }
 node {
   name: "FeatureExtractor/MobilenetV2/expanded_conv_14/add"
-  op: "Add"
-  input: "FeatureExtractor/MobilenetV2/expanded_conv_14/project/BatchNorm/FusedBatchNorm"
+  op: "AddV2"
+  input: "FeatureExtractor/MobilenetV2/expanded_conv_14/project/BatchNorm/FusedBatchNormV3"
   input: "FeatureExtractor/MobilenetV2/expanded_conv_13/output"
 }
 node {
@@ -3445,8 +3715,8 @@ node {
   }
 }
 node {
-  name: "FeatureExtractor/MobilenetV2/expanded_conv_15/expand/BatchNorm/FusedBatchNorm"
-  op: "FusedBatchNorm"
+  name: "FeatureExtractor/MobilenetV2/expanded_conv_15/expand/BatchNorm/FusedBatchNormV3"
+  op: "FusedBatchNormV3"
   input: "FeatureExtractor/MobilenetV2/expanded_conv_15/expand/Conv2D"
   input: "FeatureExtractor/MobilenetV2/expanded_conv_15/expand/BatchNorm/gamma"
   input: "FeatureExtractor/MobilenetV2/expanded_conv_15/expand/BatchNorm/beta"
@@ -3464,11 +3734,17 @@ node {
       f: 0.001
     }
   }
+  attr {
+    key: "U"
+    value {
+      type: DT_FLOAT
+    }
+  }
 }
 node {
   name: "FeatureExtractor/MobilenetV2/expanded_conv_15/expand/Relu6"
   op: "Relu6"
-  input: "FeatureExtractor/MobilenetV2/expanded_conv_15/expand/BatchNorm/FusedBatchNorm"
+  input: "FeatureExtractor/MobilenetV2/expanded_conv_15/expand/BatchNorm/FusedBatchNormV3"
 }
 node {
   name: "FeatureExtractor/MobilenetV2/expanded_conv_15/depthwise/depthwise"
@@ -3511,8 +3787,8 @@ node {
   }
 }
 node {
-  name: "FeatureExtractor/MobilenetV2/expanded_conv_15/depthwise/BatchNorm/FusedBatchNorm"
-  op: "FusedBatchNorm"
+  name: "FeatureExtractor/MobilenetV2/expanded_conv_15/depthwise/BatchNorm/FusedBatchNormV3"
+  op: "FusedBatchNormV3"
   input: "FeatureExtractor/MobilenetV2/expanded_conv_15/depthwise/depthwise"
   input: "FeatureExtractor/MobilenetV2/expanded_conv_15/depthwise/BatchNorm/gamma"
   input: "FeatureExtractor/MobilenetV2/expanded_conv_15/depthwise/BatchNorm/beta"
@@ -3530,11 +3806,17 @@ node {
       f: 0.001
     }
   }
+  attr {
+    key: "U"
+    value {
+      type: DT_FLOAT
+    }
+  }
 }
 node {
   name: "FeatureExtractor/MobilenetV2/expanded_conv_15/depthwise/Relu6"
   op: "Relu6"
-  input: "FeatureExtractor/MobilenetV2/expanded_conv_15/depthwise/BatchNorm/FusedBatchNorm"
+  input: "FeatureExtractor/MobilenetV2/expanded_conv_15/depthwise/BatchNorm/FusedBatchNormV3"
 }
 node {
   name: "FeatureExtractor/MobilenetV2/expanded_conv_15/project/Conv2D"
@@ -3584,8 +3866,8 @@ node {
   }
 }
 node {
-  name: "FeatureExtractor/MobilenetV2/expanded_conv_15/project/BatchNorm/FusedBatchNorm"
-  op: "FusedBatchNorm"
+  name: "FeatureExtractor/MobilenetV2/expanded_conv_15/project/BatchNorm/FusedBatchNormV3"
+  op: "FusedBatchNormV3"
   input: "FeatureExtractor/MobilenetV2/expanded_conv_15/project/Conv2D"
   input: "FeatureExtractor/MobilenetV2/expanded_conv_15/project/BatchNorm/gamma"
   input: "FeatureExtractor/MobilenetV2/expanded_conv_15/project/BatchNorm/beta"
@@ -3603,11 +3885,17 @@ node {
       f: 0.001
     }
   }
+  attr {
+    key: "U"
+    value {
+      type: DT_FLOAT
+    }
+  }
 }
 node {
   name: "FeatureExtractor/MobilenetV2/expanded_conv_15/add"
-  op: "Add"
-  input: "FeatureExtractor/MobilenetV2/expanded_conv_15/project/BatchNorm/FusedBatchNorm"
+  op: "AddV2"
+  input: "FeatureExtractor/MobilenetV2/expanded_conv_15/project/BatchNorm/FusedBatchNormV3"
   input: "FeatureExtractor/MobilenetV2/expanded_conv_15/input"
 }
 node {
@@ -3663,8 +3951,8 @@ node {
   }
 }
 node {
-  name: "FeatureExtractor/MobilenetV2/expanded_conv_16/expand/BatchNorm/FusedBatchNorm"
-  op: "FusedBatchNorm"
+  name: "FeatureExtractor/MobilenetV2/expanded_conv_16/expand/BatchNorm/FusedBatchNormV3"
+  op: "FusedBatchNormV3"
   input: "FeatureExtractor/MobilenetV2/expanded_conv_16/expand/Conv2D"
   input: "FeatureExtractor/MobilenetV2/expanded_conv_16/expand/BatchNorm/gamma"
   input: "FeatureExtractor/MobilenetV2/expanded_conv_16/expand/BatchNorm/beta"
@@ -3682,11 +3970,17 @@ node {
       f: 0.001
     }
   }
+  attr {
+    key: "U"
+    value {
+      type: DT_FLOAT
+    }
+  }
 }
 node {
   name: "FeatureExtractor/MobilenetV2/expanded_conv_16/expand/Relu6"
   op: "Relu6"
-  input: "FeatureExtractor/MobilenetV2/expanded_conv_16/expand/BatchNorm/FusedBatchNorm"
+  input: "FeatureExtractor/MobilenetV2/expanded_conv_16/expand/BatchNorm/FusedBatchNormV3"
 }
 node {
   name: "FeatureExtractor/MobilenetV2/expanded_conv_16/depthwise/depthwise"
@@ -3729,8 +4023,8 @@ node {
   }
 }
 node {
-  name: "FeatureExtractor/MobilenetV2/expanded_conv_16/depthwise/BatchNorm/FusedBatchNorm"
-  op: "FusedBatchNorm"
+  name: "FeatureExtractor/MobilenetV2/expanded_conv_16/depthwise/BatchNorm/FusedBatchNormV3"
+  op: "FusedBatchNormV3"
   input: "FeatureExtractor/MobilenetV2/expanded_conv_16/depthwise/depthwise"
   input: "FeatureExtractor/MobilenetV2/expanded_conv_16/depthwise/BatchNorm/gamma"
   input: "FeatureExtractor/MobilenetV2/expanded_conv_16/depthwise/BatchNorm/beta"
@@ -3748,11 +4042,17 @@ node {
       f: 0.001
     }
   }
+  attr {
+    key: "U"
+    value {
+      type: DT_FLOAT
+    }
+  }
 }
 node {
   name: "FeatureExtractor/MobilenetV2/expanded_conv_16/depthwise/Relu6"
   op: "Relu6"
-  input: "FeatureExtractor/MobilenetV2/expanded_conv_16/depthwise/BatchNorm/FusedBatchNorm"
+  input: "FeatureExtractor/MobilenetV2/expanded_conv_16/depthwise/BatchNorm/FusedBatchNormV3"
 }
 node {
   name: "FeatureExtractor/MobilenetV2/expanded_conv_16/project/Conv2D"
@@ -3802,8 +4102,8 @@ node {
   }
 }
 node {
-  name: "FeatureExtractor/MobilenetV2/expanded_conv_16/project/BatchNorm/FusedBatchNorm"
-  op: "FusedBatchNorm"
+  name: "FeatureExtractor/MobilenetV2/expanded_conv_16/project/BatchNorm/FusedBatchNormV3"
+  op: "FusedBatchNormV3"
   input: "FeatureExtractor/MobilenetV2/expanded_conv_16/project/Conv2D"
   input: "FeatureExtractor/MobilenetV2/expanded_conv_16/project/BatchNorm/gamma"
   input: "FeatureExtractor/MobilenetV2/expanded_conv_16/project/BatchNorm/beta"
@@ -3821,11 +4121,17 @@ node {
       f: 0.001
     }
   }
+  attr {
+    key: "U"
+    value {
+      type: DT_FLOAT
+    }
+  }
 }
 node {
   name: "FeatureExtractor/MobilenetV2/expanded_conv_16/output"
   op: "Identity"
-  input: "FeatureExtractor/MobilenetV2/expanded_conv_16/project/BatchNorm/FusedBatchNorm"
+  input: "FeatureExtractor/MobilenetV2/expanded_conv_16/project/BatchNorm/FusedBatchNormV3"
 }
 node {
   name: "FeatureExtractor/MobilenetV2/Conv_1/Conv2D"
@@ -3875,8 +4181,8 @@ node {
   }
 }
 node {
-  name: "FeatureExtractor/MobilenetV2/Conv_1/BatchNorm/FusedBatchNorm"
-  op: "FusedBatchNorm"
+  name: "FeatureExtractor/MobilenetV2/Conv_1/BatchNorm/FusedBatchNormV3"
+  op: "FusedBatchNormV3"
   input: "FeatureExtractor/MobilenetV2/Conv_1/Conv2D"
   input: "FeatureExtractor/MobilenetV2/Conv_1/BatchNorm/gamma"
   input: "FeatureExtractor/MobilenetV2/Conv_1/BatchNorm/beta"
@@ -3894,11 +4200,17 @@ node {
       f: 0.001
     }
   }
+  attr {
+    key: "U"
+    value {
+      type: DT_FLOAT
+    }
+  }
 }
 node {
   name: "FeatureExtractor/MobilenetV2/Conv_1/Relu6"
   op: "Relu6"
-  input: "FeatureExtractor/MobilenetV2/Conv_1/BatchNorm/FusedBatchNorm"
+  input: "FeatureExtractor/MobilenetV2/Conv_1/BatchNorm/FusedBatchNormV3"
 }
 node {
   name: "BoxPredictor_1/ClassPredictor/Conv2D"
@@ -4072,8 +4384,8 @@ node {
   }
 }
 node {
-  name: "FeatureExtractor/MobilenetV2/layer_19_1_Conv2d_2_1x1_256/BatchNorm/FusedBatchNorm"
-  op: "FusedBatchNorm"
+  name: "FeatureExtractor/MobilenetV2/layer_19_1_Conv2d_2_1x1_256/BatchNorm/FusedBatchNormV3"
+  op: "FusedBatchNormV3"
   input: "FeatureExtractor/MobilenetV2/layer_19_1_Conv2d_2_1x1_256/Conv2D"
   input: "FeatureExtractor/MobilenetV2/layer_19_1_Conv2d_2_1x1_256/BatchNorm/gamma"
   input: "FeatureExtractor/MobilenetV2/layer_19_1_Conv2d_2_1x1_256/BatchNorm/beta"
@@ -4091,11 +4403,17 @@ node {
       f: 0.001
     }
   }
+  attr {
+    key: "U"
+    value {
+      type: DT_FLOAT
+    }
+  }
 }
 node {
   name: "FeatureExtractor/MobilenetV2/layer_19_1_Conv2d_2_1x1_256/Relu6"
   op: "Relu6"
-  input: "FeatureExtractor/MobilenetV2/layer_19_1_Conv2d_2_1x1_256/BatchNorm/FusedBatchNorm"
+  input: "FeatureExtractor/MobilenetV2/layer_19_1_Conv2d_2_1x1_256/BatchNorm/FusedBatchNormV3"
 }
 node {
   name: "FeatureExtractor/MobilenetV2/layer_19_2_Conv2d_2_3x3_s2_512/Conv2D"
@@ -4145,8 +4463,8 @@ node {
   }
 }
 node {
-  name: "FeatureExtractor/MobilenetV2/layer_19_2_Conv2d_2_3x3_s2_512/BatchNorm/FusedBatchNorm"
-  op: "FusedBatchNorm"
+  name: "FeatureExtractor/MobilenetV2/layer_19_2_Conv2d_2_3x3_s2_512/BatchNorm/FusedBatchNormV3"
+  op: "FusedBatchNormV3"
   input: "FeatureExtractor/MobilenetV2/layer_19_2_Conv2d_2_3x3_s2_512/Conv2D"
   input: "FeatureExtractor/MobilenetV2/layer_19_2_Conv2d_2_3x3_s2_512/BatchNorm/gamma"
   input: "FeatureExtractor/MobilenetV2/layer_19_2_Conv2d_2_3x3_s2_512/BatchNorm/beta"
@@ -4164,11 +4482,17 @@ node {
       f: 0.001
     }
   }
+  attr {
+    key: "U"
+    value {
+      type: DT_FLOAT
+    }
+  }
 }
 node {
   name: "FeatureExtractor/MobilenetV2/layer_19_2_Conv2d_2_3x3_s2_512/Relu6"
   op: "Relu6"
-  input: "FeatureExtractor/MobilenetV2/layer_19_2_Conv2d_2_3x3_s2_512/BatchNorm/FusedBatchNorm"
+  input: "FeatureExtractor/MobilenetV2/layer_19_2_Conv2d_2_3x3_s2_512/BatchNorm/FusedBatchNormV3"
 }
 node {
   name: "BoxPredictor_2/ClassPredictor/Conv2D"
@@ -4342,8 +4666,8 @@ node {
   }
 }
 node {
-  name: "FeatureExtractor/MobilenetV2/layer_19_1_Conv2d_3_1x1_128/BatchNorm/FusedBatchNorm"
-  op: "FusedBatchNorm"
+  name: "FeatureExtractor/MobilenetV2/layer_19_1_Conv2d_3_1x1_128/BatchNorm/FusedBatchNormV3"
+  op: "FusedBatchNormV3"
   input: "FeatureExtractor/MobilenetV2/layer_19_1_Conv2d_3_1x1_128/Conv2D"
   input: "FeatureExtractor/MobilenetV2/layer_19_1_Conv2d_3_1x1_128/BatchNorm/gamma"
   input: "FeatureExtractor/MobilenetV2/layer_19_1_Conv2d_3_1x1_128/BatchNorm/beta"
@@ -4361,11 +4685,17 @@ node {
       f: 0.001
     }
   }
+  attr {
+    key: "U"
+    value {
+      type: DT_FLOAT
+    }
+  }
 }
 node {
   name: "FeatureExtractor/MobilenetV2/layer_19_1_Conv2d_3_1x1_128/Relu6"
   op: "Relu6"
-  input: "FeatureExtractor/MobilenetV2/layer_19_1_Conv2d_3_1x1_128/BatchNorm/FusedBatchNorm"
+  input: "FeatureExtractor/MobilenetV2/layer_19_1_Conv2d_3_1x1_128/BatchNorm/FusedBatchNormV3"
 }
 node {
   name: "FeatureExtractor/MobilenetV2/layer_19_2_Conv2d_3_3x3_s2_256/Conv2D"
@@ -4415,8 +4745,8 @@ node {
   }
 }
 node {
-  name: "FeatureExtractor/MobilenetV2/layer_19_2_Conv2d_3_3x3_s2_256/BatchNorm/FusedBatchNorm"
-  op: "FusedBatchNorm"
+  name: "FeatureExtractor/MobilenetV2/layer_19_2_Conv2d_3_3x3_s2_256/BatchNorm/FusedBatchNormV3"
+  op: "FusedBatchNormV3"
   input: "FeatureExtractor/MobilenetV2/layer_19_2_Conv2d_3_3x3_s2_256/Conv2D"
   input: "FeatureExtractor/MobilenetV2/layer_19_2_Conv2d_3_3x3_s2_256/BatchNorm/gamma"
   input: "FeatureExtractor/MobilenetV2/layer_19_2_Conv2d_3_3x3_s2_256/BatchNorm/beta"
@@ -4434,11 +4764,17 @@ node {
       f: 0.001
     }
   }
+  attr {
+    key: "U"
+    value {
+      type: DT_FLOAT
+    }
+  }
 }
 node {
   name: "FeatureExtractor/MobilenetV2/layer_19_2_Conv2d_3_3x3_s2_256/Relu6"
   op: "Relu6"
-  input: "FeatureExtractor/MobilenetV2/layer_19_2_Conv2d_3_3x3_s2_256/BatchNorm/FusedBatchNorm"
+  input: "FeatureExtractor/MobilenetV2/layer_19_2_Conv2d_3_3x3_s2_256/BatchNorm/FusedBatchNormV3"
 }
 node {
   name: "BoxPredictor_3/ClassPredictor/Conv2D"
@@ -4612,8 +4948,8 @@ node {
   }
 }
 node {
-  name: "FeatureExtractor/MobilenetV2/layer_19_1_Conv2d_4_1x1_128/BatchNorm/FusedBatchNorm"
-  op: "FusedBatchNorm"
+  name: "FeatureExtractor/MobilenetV2/layer_19_1_Conv2d_4_1x1_128/BatchNorm/FusedBatchNormV3"
+  op: "FusedBatchNormV3"
   input: "FeatureExtractor/MobilenetV2/layer_19_1_Conv2d_4_1x1_128/Conv2D"
   input: "FeatureExtractor/MobilenetV2/layer_19_1_Conv2d_4_1x1_128/BatchNorm/gamma"
   input: "FeatureExtractor/MobilenetV2/layer_19_1_Conv2d_4_1x1_128/BatchNorm/beta"
@@ -4631,11 +4967,17 @@ node {
       f: 0.001
     }
   }
+  attr {
+    key: "U"
+    value {
+      type: DT_FLOAT
+    }
+  }
 }
 node {
   name: "FeatureExtractor/MobilenetV2/layer_19_1_Conv2d_4_1x1_128/Relu6"
   op: "Relu6"
-  input: "FeatureExtractor/MobilenetV2/layer_19_1_Conv2d_4_1x1_128/BatchNorm/FusedBatchNorm"
+  input: "FeatureExtractor/MobilenetV2/layer_19_1_Conv2d_4_1x1_128/BatchNorm/FusedBatchNormV3"
 }
 node {
   name: "FeatureExtractor/MobilenetV2/layer_19_2_Conv2d_4_3x3_s2_256/Conv2D"
@@ -4685,8 +5027,8 @@ node {
   }
 }
 node {
-  name: "FeatureExtractor/MobilenetV2/layer_19_2_Conv2d_4_3x3_s2_256/BatchNorm/FusedBatchNorm"
-  op: "FusedBatchNorm"
+  name: "FeatureExtractor/MobilenetV2/layer_19_2_Conv2d_4_3x3_s2_256/BatchNorm/FusedBatchNormV3"
+  op: "FusedBatchNormV3"
   input: "FeatureExtractor/MobilenetV2/layer_19_2_Conv2d_4_3x3_s2_256/Conv2D"
   input: "FeatureExtractor/MobilenetV2/layer_19_2_Conv2d_4_3x3_s2_256/BatchNorm/gamma"
   input: "FeatureExtractor/MobilenetV2/layer_19_2_Conv2d_4_3x3_s2_256/BatchNorm/beta"
@@ -4704,11 +5046,17 @@ node {
       f: 0.001
     }
   }
+  attr {
+    key: "U"
+    value {
+      type: DT_FLOAT
+    }
+  }
 }
 node {
   name: "FeatureExtractor/MobilenetV2/layer_19_2_Conv2d_4_3x3_s2_256/Relu6"
   op: "Relu6"
-  input: "FeatureExtractor/MobilenetV2/layer_19_2_Conv2d_4_3x3_s2_256/BatchNorm/FusedBatchNorm"
+  input: "FeatureExtractor/MobilenetV2/layer_19_2_Conv2d_4_3x3_s2_256/BatchNorm/FusedBatchNormV3"
 }
 node {
   name: "BoxPredictor_4/ClassPredictor/Conv2D"
@@ -4882,8 +5230,8 @@ node {
   }
 }
 node {
-  name: "FeatureExtractor/MobilenetV2/layer_19_1_Conv2d_5_1x1_64/BatchNorm/FusedBatchNorm"
-  op: "FusedBatchNorm"
+  name: "FeatureExtractor/MobilenetV2/layer_19_1_Conv2d_5_1x1_64/BatchNorm/FusedBatchNormV3"
+  op: "FusedBatchNormV3"
   input: "FeatureExtractor/MobilenetV2/layer_19_1_Conv2d_5_1x1_64/Conv2D"
   input: "FeatureExtractor/MobilenetV2/layer_19_1_Conv2d_5_1x1_64/BatchNorm/gamma"
   input: "FeatureExtractor/MobilenetV2/layer_19_1_Conv2d_5_1x1_64/BatchNorm/beta"
@@ -4901,11 +5249,17 @@ node {
       f: 0.001
     }
   }
+  attr {
+    key: "U"
+    value {
+      type: DT_FLOAT
+    }
+  }
 }
 node {
   name: "FeatureExtractor/MobilenetV2/layer_19_1_Conv2d_5_1x1_64/Relu6"
   op: "Relu6"
-  input: "FeatureExtractor/MobilenetV2/layer_19_1_Conv2d_5_1x1_64/BatchNorm/FusedBatchNorm"
+  input: "FeatureExtractor/MobilenetV2/layer_19_1_Conv2d_5_1x1_64/BatchNorm/FusedBatchNormV3"
 }
 node {
   name: "FeatureExtractor/MobilenetV2/layer_19_2_Conv2d_5_3x3_s2_128/Conv2D"
@@ -4955,8 +5309,8 @@ node {
   }
 }
 node {
-  name: "FeatureExtractor/MobilenetV2/layer_19_2_Conv2d_5_3x3_s2_128/BatchNorm/FusedBatchNorm"
-  op: "FusedBatchNorm"
+  name: "FeatureExtractor/MobilenetV2/layer_19_2_Conv2d_5_3x3_s2_128/BatchNorm/FusedBatchNormV3"
+  op: "FusedBatchNormV3"
   input: "FeatureExtractor/MobilenetV2/layer_19_2_Conv2d_5_3x3_s2_128/Conv2D"
   input: "FeatureExtractor/MobilenetV2/layer_19_2_Conv2d_5_3x3_s2_128/BatchNorm/gamma"
   input: "FeatureExtractor/MobilenetV2/layer_19_2_Conv2d_5_3x3_s2_128/BatchNorm/beta"
@@ -4974,11 +5328,17 @@ node {
       f: 0.001
     }
   }
+  attr {
+    key: "U"
+    value {
+      type: DT_FLOAT
+    }
+  }
 }
 node {
   name: "FeatureExtractor/MobilenetV2/layer_19_2_Conv2d_5_3x3_s2_128/Relu6"
   op: "Relu6"
-  input: "FeatureExtractor/MobilenetV2/layer_19_2_Conv2d_5_3x3_s2_128/BatchNorm/FusedBatchNorm"
+  input: "FeatureExtractor/MobilenetV2/layer_19_2_Conv2d_5_3x3_s2_128/BatchNorm/FusedBatchNormV3"
 }
 node {
   name: "BoxPredictor_5/ClassPredictor/Conv2D"
@@ -5657,7 +6017,7 @@ node {
         dtype: DT_INT32
         int_val: 0
         int_val: -1
-        int_val: 4
+        int_val: 7
         tensor_shape {
           dim {
             size: 3
@@ -5704,7 +6064,7 @@ node {
   attr {
     key: "confidence_threshold"
     value {
-      f: 0.01
+      f: 1e-08
     }
   }
   attr {
@@ -5722,7 +6082,7 @@ node {
   attr {
     key: "num_classes"
     value {
-      i: 4
+      i: 7
     }
   }
   attr {
