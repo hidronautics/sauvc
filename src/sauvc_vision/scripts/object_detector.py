@@ -1,13 +1,16 @@
 #!/usr/bin/env python
 
-import rospy
-import rospkg
 import cv2 as cv
 import json
 import os
 import numpy as np
 import time
 import os
+from random import randint
+from itertools import groupby
+
+import rospy
+import rospkg
 from cv_bridge import CvBridge, CvBridgeError
 from sauvc_common.msg import Object
 from sauvc_common.msg import ObjectsArray
@@ -122,6 +125,17 @@ class object_detector:
                 box = cvOut[0, 0, i, 3:7] * np.array([cols, rows, cols, rows])
                 object_["box"] = box.astype("int")
                 objects.append(object_)
+        # filter founded objects
+        # group by name and sort
+        groups = [(group_name, list(group)) for group_name, group in groupby(
+            sorted(objects, key=lambda label: label['name']), lambda label: label['name'])]
+        objects = []
+        # go through groups and pop unnecessary items
+        for group in groups:
+            object_count_from_json = list(
+                filter(lambda label: label['name'] == group[0], labels))[0]["count"]
+            del group[1][object_count_from_json:]
+            objects += group[1]
         return objects
 
     def deleteMultipleObjects(self, objects):
@@ -129,37 +143,42 @@ class object_detector:
 
     def draw(self, img, objects):
         for dnn_object in objects:
+            # get box coordinates
             x_start = dnn_object['box'][0]
             y_start = dnn_object['box'][1]
             x_end = dnn_object['box'][2]
             y_end = dnn_object['box'][3]
             x_center = int(x_start + (x_end - x_start)/2)
             y_center = int(y_center + (y_end - y_center)/2)
-            cv.rectangle(img, (x_start, y_start), (x_end, y_end),
-                         (23, 230, 210), thickness=1)
-            cv.line(img, (x_center, y_center - 5), (x_center, y_center + 5),
-                     (23, 230, 210), thickness=1)
-            cv.line(img, (x_center - 5, y_center), (x_center + 5, y_center),
-                     (23, 230, 210), thickness=1)
+            # random color
+            color = (randint(0, 255), randint(0, 255), randint(0, 255))
+            # draw rectangle and center point
+            cv.rectangle(img, (x_start, y_start),
+                         (x_end, y_end), color, thickness=1)
+            cv.line(img, (x_center - 5, y_center - 5),
+                    (x_center + 5, y_center + 5), color, thickness=1)
+            cv.line(img, (x_center + 5, y_center - 5),
+                    (x_center - 5, y_center + 5), color, thickness=1)
             # draw the predicted label and associated probability of the
             # instance segmentation on the image
-            if (y_start < )
-            text = "{}: {:.2f}".format(dnn_object['name'], dnn_object['confidence'])
-            cv.putText(img, text, (startX, startY - 5),
-                       cv.FONT_HERSHEY_SIMPLEX, 0.5, (23, 230, 210), 2)
+            if (y_start < 15):
+                text_name = "{}".format(dnn_object["name"])
+                cv.putText(img, text_name, (x_start, y_start - 5),
+                           cv.FONT_HERSHEY_DUPLEX, 0.5, color, 1)
+                text_confidence = "{:.2f}".format(confidence)
+                cv.putText(img, text_confidence, (x_start, y_start + 15),
+                           cv.FONT_HERSHEY_DUPLEX, 0.5, color, 1)
         return img
 
 
 if __name__ == '__main__':
     rospy.init_node('object_detector')
     # parameters
-    front_camera_sub_topic = rospy.get_param('~front_camera_sub_topic')
-    bottom_camera_sub_topic = rospy.get_param('~bottom_camera_sub_topic')
+    input_image_topic = rospy.get_param('~input_image_topic')
     dnn_confidence = int(rospy.get_param('~dnn_confidence'))
     try:
-        gt = object_detector(front_camera_sub_topic,
-                             bottom_camera_sub_topic, dnn_confidence)
+        gt = object_detector(input_image_topic, dnn_confidence)
         rospy.spin()
     except rospy.ROSInterruptException:
-        print("Shutting down")
+        print("Shutting down {} node".format(rospy.get_name()))
     cv.destroyAllWindows()
