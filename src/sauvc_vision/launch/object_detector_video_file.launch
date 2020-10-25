@@ -36,7 +36,7 @@
     <!-- Gate detector node -->
     <node name="object_detector" pkg="sauvc_vision" type="object_detector.py" output="screen" respawn="true">
         <param name="input_image_topic" value="/file/image_raw" /> 
-        <param name="dnn_confidence" value="0.1" />
+        <param name="dnn_confidence" value="0.5" />
     </node>
 
     <group if="$(arg record)">

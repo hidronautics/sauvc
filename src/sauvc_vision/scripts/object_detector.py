@@ -33,6 +33,14 @@ class object_detector:
         # read labels
         with open(labels_path) as json_file:
             self.labels = json.loads(json_file.read())["labels"]
+        # random colors
+        self.colors = {}
+        for label in self.labels:
+            color = (randint(0, 255), randint(0, 255), randint(0, 255))
+            self.colors[label["name"]] = color
+            rospy.loginfo(label["name"])
+            rospy.loginfo(type(color))
+        rospy.loginfo(self.colors)
 
         # init cv_bridge
         self.bridge = CvBridge()
@@ -155,24 +163,29 @@ class object_detector:
             y_end = dnn_object['box'][3]
             x_center = int(x_start + (x_end - x_start)/2)
             y_center = int(y_start + (y_end - y_start)/2)
-            # random color
-            color = (randint(0, 255), randint(0, 255), randint(0, 255))
             # draw rectangle and center point
             cv.rectangle(img, (x_start, y_start),
-                         (x_end, y_end), color, thickness=1)
+                         (x_end, y_end), self.colors[dnn_object["name"]], thickness=2)
             cv.line(img, (x_center - 5, y_center - 5),
-                    (x_center + 5, y_center + 5), color, thickness=1)
+                    (x_center + 5, y_center + 5), self.colors[dnn_object["name"]], thickness=1)
             cv.line(img, (x_center + 5, y_center - 5),
-                    (x_center - 5, y_center + 5), color, thickness=1)
+                    (x_center - 5, y_center + 5), self.colors[dnn_object["name"]], thickness=1)
             # draw the predicted label and associated probability of the
             # instance segmentation on the image
             if (y_start < 15):
                 text_name = "{}".format(dnn_object["name"])
-                cv.putText(img, text_name, (x_start, y_start - 5),
-                           cv.FONT_HERSHEY_DUPLEX, 0.5, color, 1)
+                cv.putText(img, text_name, (x_start + 3, y_start + 15),
+                           cv.FONT_HERSHEY_DUPLEX, 0.5, self.colors[dnn_object["name"]], 1)
                 text_confidence = "{:.2f}".format(dnn_object["confidence"])
-                cv.putText(img, text_confidence, (x_start, y_start + 15),
-                           cv.FONT_HERSHEY_DUPLEX, 0.5, color, 1)
+                cv.putText(img, text_confidence, (x_start + 3, y_start + 35),
+                           cv.FONT_HERSHEY_DUPLEX, 0.5, self.colors[dnn_object["name"]], 1)
+            else:
+                text_name = "{}".format(dnn_object["name"])
+                cv.putText(img, text_name, (x_start + 3, y_start - 5),
+                           cv.FONT_HERSHEY_DUPLEX, 0.5, self.colors[dnn_object["name"]], 1)
+                text_confidence = "{:.2f}".format(dnn_object["confidence"])
+                cv.putText(img, text_confidence, (x_start + 3, y_start + 15),
+                           cv.FONT_HERSHEY_DUPLEX, 0.5, self.colors[dnn_object["name"]], 1)
         return img
 
 
