@@ -14,9 +14,9 @@
 
     <!-- Enables video recording -->
     <arg name="record" default="false" />
-    
+
     <!-- launch video stream -->
-    <include file="$(find video_stream_opencv)/launch/camera.launch" >
+    <include file="$(find video_stream_opencv)/launch/camera.launch">
         <!-- node name and ros graph name -->
         <arg name="camera_name" value="file" />
         <!-- means video device 0, /dev/video0 -->
@@ -30,14 +30,17 @@
         <!-- setting frame_id -->
         <arg name="frame_id" value="image" />
         <!-- visualize on an image_view window the stream generated -->
-        <arg name="visualize" value="true" />
+        <arg name="visualize" value="false" />
     </include>
 
     <!-- Gate detector node -->
-    <node name="object_detector" pkg="sauvc_vision" type="object_detector.py" output="screen" respawn="true">
-        <param name="input_image_topic" value="/file/image_raw" /> 
+    <!-- output objects topic *node_name*/objects -->
+    <!-- output image topic *node_name*/image -->
+    <node name="object_detector" pkg="sauvc_vision" type="opencv_dnn_detector.py" output="screen" respawn="true">
+        <param name="input_image_topic" value="/file/image_raw" />
         <param name="dnn_confidence_threshold" value="0.5" />
         <param name="enable_output_image_publishing" value="true" />
+        <param name="package_name_with_net" value="sauvc_vision" />
     </node>
 
     <group if="$(arg record)">

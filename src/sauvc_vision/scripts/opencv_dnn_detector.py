@@ -18,13 +18,13 @@ from sensor_msgs.msg import Image
 
 
 class ObjectDetector:
-    def __init__(self, input_image_topic, confidence, enable_output_image_publishing):
+    def __init__(self, input_image_topic, confidence, enable_output_image_publishing, package_name_with_net):
         # get node name
         node_name = rospy.get_name()
         rospy.loginfo("{} node initializing".format(node_name))
         # get paths
         rospack = rospkg.RosPack()
-        path = rospack.get_path('sauvc_vision')
+        path = rospack.get_path(package_name_with_net)
         weights_path = os.path.sep.join(
             [path, "net", "frozen_inference_graph.pb"])
         labels_path = os.path.sep.join([path, "net", "labels.json"])
@@ -88,7 +88,7 @@ class ObjectDetector:
                 self.object_msg.bottom_right_y = bottom_right_y
                 self.objects_array_msg.objects.append(self.object_msg)
             self.objects_array_pub.publish(self.objects_array_msg)
-            
+
             if self.enable_output_image_publishing:
                 # draw bounding boxes
                 dnn_cv_image = self.draw(cv_image, dnn_objects)
@@ -135,7 +135,7 @@ class ObjectDetector:
                 objects.append(object_)
         rospy.loginfo("objects")
         rospy.loginfo(objects)
-        return deleteMultipleObjects(objects)
+        return self.deleteMultipleObjects(objects)
 
     def deleteMultipleObjects(self, objects):
         # filter founded objects
@@ -197,9 +197,10 @@ if __name__ == '__main__':
     dnn_confidence_threshold = rospy.get_param('~dnn_confidence_threshold')
     enable_output_image_publishing = rospy.get_param(
         '~enable_output_image_publishing')
+    package_name_with_net = rospy.get_param('~package_name_with_net')
     try:
         ot = ObjectDetector(input_image_topic, dnn_confidence_threshold,
-                            enable_output_image_publishing)
+                            enable_output_image_publishing, package_name_with_net)
         rospy.spin()
     except rospy.ROSInterruptException:
         print("Shutting down {} node".format(rospy.get_name()))
