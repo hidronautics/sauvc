@@ -10,7 +10,7 @@
     <arg name="fps" default="25" />
 
     <!-- Enables video streaming -->
-    <arg name="stream" default="false" />
+    <arg name="stream" default="true" />
 
     <!-- Enables video recording -->
     <arg name="record" default="false" />
@@ -20,7 +20,7 @@
         <!-- node name and ros graph name -->
         <arg name="camera_name" value="file" />
         <!-- means video device 0, /dev/video0 -->
-        <arg name="video_stream_provider" value="/home/vladushked/Downloads/Telegram Desktop/stingray_video_records/device_bottom_camera_image_raw_2020_02_08_13_11_56.avi" />
+        <arg name="video_stream_provider" value="/home/vladushked/Documents/hydro/dnn_gate_detector/run_detection_scripts/video/2.mp4" />
         <!-- set camera fps to (if the device allows) -->
         <arg name="set_camera_fps" value="30"/>
         <!-- set buffer queue size of frame capturing to -->
@@ -28,27 +28,15 @@
         <!-- throttling the querying of frames to -->
         <arg name="fps" value="30" />
         <!-- setting frame_id -->
-        <arg name="frame_id" value="webcam" />
+        <arg name="frame_id" value="image" />
         <!-- visualize on an image_view window the stream generated -->
         <arg name="visualize" value="true" />
     </include>
 
     <!-- Gate detector node -->
-    <node name="gate_detector" pkg="sauvc_vision" type="gate_detector.py" output="screen" respawn="true">
-        <param name="camera_sub_topic" value="/device_camera/image_raw" />
-        <param name="gate_pub_topic" value="/bottom_equipment/gate" />
-        <param name="dnn_pub_topic" value="/dnn/image" />
-        <param name="video_device" value="$(arg device)" />
-        <param name="dnn_confidence" value="0.5" />
-    </node>
-
-    <!-- Red flare detector node -->
-    <node name="red_flare_detector" pkg="sauvc_vision" type="red_flare_detector.py" output="screen" respawn="true">
-        <param name="camera_sub_topic" value="/device_camera/image_raw" />
-        <param name="red_flare_pub_topic" value="/bottom_equipment/red_flare" />
-        <param name="dnn_pub_topic" value="/dnn/image" />
-        <param name="video_device" value="$(arg device)" />
-        <param name="dnn_confidence" value="0.5" />
+    <node name="object_detector" pkg="sauvc_vision" type="object_detector.py" output="screen" respawn="true">
+        <param name="input_image_topic" value="/file/image_raw" /> 
+        <param name="dnn_confidence" value="0.1" />
     </node>
 
     <group if="$(arg record)">

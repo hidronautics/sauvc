@@ -31,20 +31,18 @@ class object_detector:
         config_path = os.path.sep.join([path, "net", "opencv_graph.pbtxt"])
         self.confidence = confidence
         # read labels
-        with open("labels.json") as json_file:
+        with open(labels_path) as json_file:
             self.labels = json.loads(json_file.read())["labels"]
 
+        # init cv_bridge
+        self.bridge = CvBridge()
+        # load our NET from disk
+        rospy.loginfo("Loading NET from disk...")
+        self.cvNet = cv.dnn.readNetFromTensorflow(weights_path, config_path)
+
         # ROS Topic names
-        objects_array_topic = "/{}/objects".format(node_name)
-        output_image_topic = "/{}/image".format(node_name)
-
-        # init msg
-        self.object_msg = Object()
-        self.objects_array_msg = ObjectsArray()
-
-        # subscribers
-        self.image_sub = rospy.Subscriber(
-            input_image_topic, Image, self.callback, queue_size=1)
+        objects_array_topic = "{}/objects".format(node_name)
+        output_image_topic = "{}/image".format(node_name)
 
         # publishers
         self.objects_array_pub = rospy.Publisher(
@@ -52,11 +50,9 @@ class object_detector:
         self.image_pub = rospy.Publisher(
             output_image_topic, Image, queue_size=1)
 
-        # init cv_bridge
-        self.bridge = CvBridge()
-        # load our NET from disk
-        rospy.loginfo("Loading NET from disk...")
-        self.cvNet = cv.dnn.readNetFromTensorflow(weights_path, config_path)
+        # subscribers
+        self.image_sub = rospy.Subscriber(
+            input_image_topic, Image, self.callback, queue_size=1)
 
     def callback(self, data):
         try:
@@ -65,23 +61,26 @@ class object_detector:
             # detect our objects
             dnn_objects = self.detector(cv_image)
             # publish objects
-            for dnn_object in dnn_objects:
-                self.object_msg.name = dnn_object["name"]
+            # init msg
+            self.object_msg = Object()
+            self.objects_array_msg = ObjectsArray()
+            for index, dnn_object in enumerate(dnn_objects):
+                self.object_msg.name = dnn_object["name"].encode('utf-8')
                 self.object_msg.confidence = dnn_object["confidence"]
-                x_start = dnn_object['box'][0]
+                x_start = int(dnn_object['box'][0])
                 self.object_msg.x_start = x_start
-                y_start = dnn_object['box'][1]
+                y_start = int(dnn_object['box'][1])
                 self.object_msg.y_start = y_start
-                x_end = dnn_object['box'][2]
+                x_end = int(dnn_object['box'][2])
                 self.object_msg.x_end = x_end
-                y_end = dnn_object['box'][3]
+                y_end = int(dnn_object['box'][3])
                 self.object_msg.y_end = y_end
-                x_center = x_start + (x_end - x_start)/2
+                x_center = int(x_start + (x_end - x_start)/2)
                 self.object_msg.x_center = x_center
-                y_center = y_center + (y_end - y_center)/2
+                y_center = int(y_start + (y_end - y_start)/2)
                 self.object_msg.y_center = y_center
-                self.objects_array_msg.push_back(object_msg)
-            self.objects_array_pub(self.objects_array_msg)
+                self.objects_array_msg.objects.append(self.object_msg)
+            self.objects_array_pub.publish(self.objects_array_msg)
             # draw bounding boxes
             dnn_cv_image = self.draw(cv_image, dnn_objects)
             # convert cv image into ros format
@@ -115,7 +114,7 @@ class object_detector:
             # is greater than the minimum probability
             if confidence > self.confidence:
                 object_ = {}
-                object_["name"] = self.labels[classID-1]
+                object_["name"] = self.labels[classID-1]["name"]
                 object_["confidence"] = confidence
                 # clone our original image so we can draw on it
                 clone = img.copy()
@@ -125,15 +124,21 @@ class object_detector:
                 box = cvOut[0, 0, i, 3:7] * np.array([cols, rows, cols, rows])
                 object_["box"] = box.astype("int")
                 objects.append(object_)
+        rospy.loginfo("objects")
+        rospy.loginfo(objects)
         # filter founded objects
         # group by name and sort
         groups = [(group_name, list(group)) for group_name, group in groupby(
             sorted(objects, key=lambda label: label['name']), lambda label: label['name'])]
+        rospy.loginfo("groups")
+        rospy.loginfo(groups)
         objects = []
         # go through groups and pop unnecessary items
         for group in groups:
             object_count_from_json = list(
-                filter(lambda label: label['name'] == group[0], labels))[0]["count"]
+                filter(lambda label: label['name'] == group[0], self.labels))[0]["count"]
+            rospy.loginfo("object_count_from_json")
+            rospy.loginfo(object_count_from_json)
             del group[1][object_count_from_json:]
             objects += group[1]
         return objects
@@ -149,7 +154,7 @@ class object_detector:
             x_end = dnn_object['box'][2]
             y_end = dnn_object['box'][3]
             x_center = int(x_start + (x_end - x_start)/2)
-            y_center = int(y_center + (y_end - y_center)/2)
+            y_center = int(y_start + (y_end - y_start)/2)
             # random color
             color = (randint(0, 255), randint(0, 255), randint(0, 255))
             # draw rectangle and center point
@@ -165,7 +170,7 @@ class object_detector:
                 text_name = "{}".format(dnn_object["name"])
                 cv.putText(img, text_name, (x_start, y_start - 5),
                            cv.FONT_HERSHEY_DUPLEX, 0.5, color, 1)
-                text_confidence = "{:.2f}".format(confidence)
+                text_confidence = "{:.2f}".format(dnn_object["confidence"])
                 cv.putText(img, text_confidence, (x_start, y_start + 15),
                            cv.FONT_HERSHEY_DUPLEX, 0.5, color, 1)
         return img
@@ -175,7 +180,7 @@ if __name__ == '__main__':
     rospy.init_node('object_detector')
     # parameters
     input_image_topic = rospy.get_param('~input_image_topic')
-    dnn_confidence = int(rospy.get_param('~dnn_confidence'))
+    dnn_confidence = rospy.get_param('~dnn_confidence')
     try:
         gt = object_detector(input_image_topic, dnn_confidence)
         rospy.spin()
