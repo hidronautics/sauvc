@@ -1,74 +1,17 @@
-<!--
-    This .
--->
 <launch>
 
-    <!-- Defines device that will be used as camera -->
-    <!-- arg name="device_front" default="/dev/v4l/by-path/platform-3530000.xhci-usb-0:1:1.0-video-index0" />
-    <arg name="device_bottom" default="/dev/v4l/by-path/platform-3530000.xhci-usb-0:2:1.0-video-index0" -->
-    <arg name="device_front" default="/dev/video0" />
-    <arg name="device_bottom" default="/dev/video2" />
-    <!-- Defines FPS -->
-    <arg name="fps" default="25" />
-    <!-- Enables video streaming -->
-    <arg name="stream" default="false" />
-    <!-- Enables video recording -->
-    <arg name="record" default="false" />
-    <!-- Enables or disables camera (in debug purposes -->
-    <arg name="cameras" default="true" />
-
-    <group if="$(arg cameras)">
-        <!-- Front camera interface node -->
-        <node name="front_camera" pkg="usb_cam" type="usb_cam_node" output="screen" respawn="true">
-            <param name="video_device" value="$(arg device_front)" />
-            <param name="image_width" value="640" />
-            <param name="image_height" value="480" />
-            <param name="pixel_format" value="yuyv" />
-            <param name="framerate" value="$(arg fps)" />
-            <param name="camera_name" value="front_camera" />
-            <param name="io_method" value="mmap"/>
-        </node>
-
-        <!-- Bottom camera interface node -->
-        <node name="bottom_camera" pkg="usb_cam" type="usb_cam_node" output="screen" respawn="true">
-            <param name="video_device" value="$(arg device_bottom)" />
-            <param name="image_width" value="640" />
-            <param name="image_height" value="480" />
-            <param name="pixel_format" value="yuyv" />
-            <param name="framerate" value="$(arg fps)" />
-            <param name="camera_name" value="bottom_camera" />
-            <param name="io_method" value="mmap"/>
-        </node>
-    </group>
-
-    <!-- Object detector node -->
-    <node name="object_detector" pkg="sauvc_vision" type="object_detector.py" output="screen" respawn="true">
-        <param name="front_camera_sub_topic" value="/front_camera/image_raw" />
-        <param name="bottom_camera_sub_topic" value="/bottom_camera/image_raw" />
-        <param name="dnn_pub_topic" value="/dnn/image" />
-        <param name="dnn_confidence" value="0.5" />
-    </node>
-
-    <group if="$(arg record)">
-        <!-- Video recorder node -->
-        <node name="video_recorder" pkg="stingray_utils" type="video_recorder.py" output="screen" respawn="true">
-            <param name="source_topic" value="/object_detector/image" />
-            <param name="output_width" value="640" />
-            <param name="output_height" value="480" />
-            <param name="output_fps" value="$(arg fps)" />
-            <param name="output_format" value="h264" />
-            <param name="record_dir" value="$(env HOME)/stingray_video_records/" />
-        </node>
-    </group>
-
-    <group if="$(arg stream)">
-        <!-- Video web server -->
-        <!-- Stream will be available at http://<hostname>:8080/stream_viewer?topic=<image topic> -->
-        <!-- For direct images from camera the topic is /<camera_name>/image_raw -->
-        <node name="video_server" pkg="web_video_server" type="web_video_server" output="screen" respawn="true">
-            <param name="server_threads" value="4" />
-            <param name="ros_threads" value="10" />
-        </node>
-    </group>
+    <include file="$(find stingray_vision)/launch/object_detector.launch">
+        <!-- Package name with dnn weights -->
+        <arg name="dnn_weights_pkg" default="sauvc_vision" />
+        <!-- Enables video streaming -->
+        <arg name="stream" default="true" />
+        <!-- Enables video recording -->
+        <arg name="record" default="false" />
+        <!-- True to enable camera-->
+        <!-- False to enable videofile -->
+        <arg name="cameras" default="false" />
+        <!-- Providing video from file -->
+        <arg name="videofile_path" default="/home/vladushked/Documents/hydro/dnn_gate_detector/run_detection_scripts/video/2.mp4" />
+    </include>
 
 </launch>
