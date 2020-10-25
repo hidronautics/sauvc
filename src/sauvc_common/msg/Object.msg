@@ -1,8 +1,6 @@
 string name
 float32 confidence
-int16 x_start
-int16 y_start
-int16 x_end
-int16 y_end
-int16 x_center
-int16 y_center
+int16 top_left_x
+int16 top_left_y
+int16 bottom_right_x
+int16 bottom_right_y

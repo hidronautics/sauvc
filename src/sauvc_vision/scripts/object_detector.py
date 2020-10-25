@@ -17,8 +17,8 @@ from sauvc_common.msg import ObjectsArray
 from sensor_msgs.msg import Image
 
 
-class object_detector:
-    def __init__(self, input_image_topic, confidence):
+class ObjectDetector:
+    def __init__(self, input_image_topic, confidence, enable_output_image_publishing):
         # get node name
         node_name = rospy.get_name()
         rospy.loginfo("{} node initializing".format(node_name))
@@ -52,11 +52,14 @@ class object_detector:
         objects_array_topic = "{}/objects".format(node_name)
         output_image_topic = "{}/image".format(node_name)
 
+        self.enable_output_image_publishing = enable_output_image_publishing
+
         # publishers
         self.objects_array_pub = rospy.Publisher(
             objects_array_topic, ObjectsArray, queue_size=10)
-        self.image_pub = rospy.Publisher(
-            output_image_topic, Image, queue_size=1)
+        if self.enable_output_image_publishing:
+            self.image_pub = rospy.Publisher(
+                output_image_topic, Image, queue_size=1)
 
         # subscribers
         self.image_sub = rospy.Subscriber(
@@ -75,26 +78,24 @@ class object_detector:
             for index, dnn_object in enumerate(dnn_objects):
                 self.object_msg.name = dnn_object["name"].encode('utf-8')
                 self.object_msg.confidence = dnn_object["confidence"]
-                x_start = int(dnn_object['box'][0])
-                self.object_msg.x_start = x_start
-                y_start = int(dnn_object['box'][1])
-                self.object_msg.y_start = y_start
-                x_end = int(dnn_object['box'][2])
-                self.object_msg.x_end = x_end
-                y_end = int(dnn_object['box'][3])
-                self.object_msg.y_end = y_end
-                x_center = int(x_start + (x_end - x_start)/2)
-                self.object_msg.x_center = x_center
-                y_center = int(y_start + (y_end - y_start)/2)
-                self.object_msg.y_center = y_center
+                top_left_x = int(dnn_object['box'][0])
+                self.object_msg.top_left_x = top_left_x
+                top_left_y = int(dnn_object['box'][1])
+                self.object_msg.top_left_y = top_left_y
+                bottom_right_x = int(dnn_object['box'][2])
+                self.object_msg.bottom_right_x = bottom_right_x
+                bottom_right_y = int(dnn_object['box'][3])
+                self.object_msg.bottom_right_y = bottom_right_y
                 self.objects_array_msg.objects.append(self.object_msg)
             self.objects_array_pub.publish(self.objects_array_msg)
-            # draw bounding boxes
-            dnn_cv_image = self.draw(cv_image, dnn_objects)
-            # convert cv image into ros format
-            ros_image = self.bridge.cv2_to_imgmsg(dnn_cv_image, "bgr8")
-            # publish output image
-            self.image_pub.publish(ros_image)
+            
+            if self.enable_output_image_publishing:
+                # draw bounding boxes
+                dnn_cv_image = self.draw(cv_image, dnn_objects)
+                # convert cv image into ros format
+                ros_image = self.bridge.cv2_to_imgmsg(dnn_cv_image, "bgr8")
+                # publish output image
+                self.image_pub.publish(ros_image)
         except CvBridgeError as e:
             print(e)
 
@@ -134,13 +135,16 @@ class object_detector:
                 objects.append(object_)
         rospy.loginfo("objects")
         rospy.loginfo(objects)
+        return deleteMultipleObjects(objects)
+
+    def deleteMultipleObjects(self, objects):
         # filter founded objects
         # group by name and sort
         groups = [(group_name, list(group)) for group_name, group in groupby(
             sorted(objects, key=lambda label: label['name']), lambda label: label['name'])]
         rospy.loginfo("groups")
         rospy.loginfo(groups)
-        objects = []
+        filtered_objects = []
         # go through groups and pop unnecessary items
         for group in groups:
             object_count_from_json = list(
@@ -148,43 +152,40 @@ class object_detector:
             rospy.loginfo("object_count_from_json")
             rospy.loginfo(object_count_from_json)
             del group[1][object_count_from_json:]
-            objects += group[1]
-        return objects
-
-    def deleteMultipleObjects(self, objects):
-        pass
+            filtered_objects += group[1]
+        return filtered_objects
 
     def draw(self, img, objects):
         for dnn_object in objects:
             # get box coordinates
-            x_start = dnn_object['box'][0]
-            y_start = dnn_object['box'][1]
-            x_end = dnn_object['box'][2]
-            y_end = dnn_object['box'][3]
-            x_center = int(x_start + (x_end - x_start)/2)
-            y_center = int(y_start + (y_end - y_start)/2)
+            top_left_x = dnn_object['box'][0]
+            top_left_y = dnn_object['box'][1]
+            bottom_right_x = dnn_object['box'][2]
+            bottom_right_y = dnn_object['box'][3]
+            center_x = int(top_left_x + (bottom_right_x - top_left_x)/2)
+            center_y = int(top_left_y + (bottom_right_y - top_left_y)/2)
             # draw rectangle and center point
-            cv.rectangle(img, (x_start, y_start),
-                         (x_end, y_end), self.colors[dnn_object["name"]], thickness=2)
-            cv.line(img, (x_center - 5, y_center - 5),
-                    (x_center + 5, y_center + 5), self.colors[dnn_object["name"]], thickness=1)
-            cv.line(img, (x_center + 5, y_center - 5),
-                    (x_center - 5, y_center + 5), self.colors[dnn_object["name"]], thickness=1)
+            cv.rectangle(img, (top_left_x, top_left_y),
+                         (bottom_right_x, bottom_right_y), self.colors[dnn_object["name"]], thickness=2)
+            cv.line(img, (center_x - 5, center_y - 5),
+                    (center_x + 5, center_y + 5), self.colors[dnn_object["name"]], thickness=1)
+            cv.line(img, (center_x + 5, center_y - 5),
+                    (center_x - 5, center_y + 5), self.colors[dnn_object["name"]], thickness=1)
             # draw the predicted label and associated probability of the
             # instance segmentation on the image
-            if (y_start < 15):
+            if (top_left_y < 15):
                 text_name = "{}".format(dnn_object["name"])
-                cv.putText(img, text_name, (x_start + 3, y_start + 15),
+                cv.putText(img, text_name, (top_left_x + 3, top_left_y + 15),
                            cv.FONT_HERSHEY_DUPLEX, 0.5, self.colors[dnn_object["name"]], 1)
                 text_confidence = "{:.2f}".format(dnn_object["confidence"])
-                cv.putText(img, text_confidence, (x_start + 3, y_start + 35),
+                cv.putText(img, text_confidence, (top_left_x + 3, top_left_y + 35),
                            cv.FONT_HERSHEY_DUPLEX, 0.5, self.colors[dnn_object["name"]], 1)
             else:
                 text_name = "{}".format(dnn_object["name"])
-                cv.putText(img, text_name, (x_start + 3, y_start - 5),
+                cv.putText(img, text_name, (top_left_x + 3, top_left_y - 5),
                            cv.FONT_HERSHEY_DUPLEX, 0.5, self.colors[dnn_object["name"]], 1)
                 text_confidence = "{:.2f}".format(dnn_object["confidence"])
-                cv.putText(img, text_confidence, (x_start + 3, y_start + 15),
+                cv.putText(img, text_confidence, (top_left_x + 3, top_left_y + 15),
                            cv.FONT_HERSHEY_DUPLEX, 0.5, self.colors[dnn_object["name"]], 1)
         return img
 
@@ -193,10 +194,12 @@ if __name__ == '__main__':
     rospy.init_node('object_detector')
     # parameters
     input_image_topic = rospy.get_param('~input_image_topic')
-    dnn_confidence = rospy.get_param('~dnn_confidence')
+    dnn_confidence_threshold = rospy.get_param('~dnn_confidence_threshold')
+    enable_output_image_publishing = rospy.get_param(
+        '~enable_output_image_publishing')
     try:
-        gt = object_detector(input_image_topic, dnn_confidence)
+        ot = ObjectDetector(input_image_topic, dnn_confidence_threshold,
+                            enable_output_image_publishing)
         rospy.spin()
     except rospy.ROSInterruptException:
         print("Shutting down {} node".format(rospy.get_name()))
-    cv.destroyAllWindows()
