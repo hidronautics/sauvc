@@ -4,7 +4,7 @@
   <version>0.1.0</version>
   <description>The sauvc_common package that contains messages, services and actions</description>
 
-  <maintainer email="vladik1209@gmail.com">Vladislav Plotnikov</maintainer>
+  <maintainer email="vladislav.a.plotnikov@yandex.ru">Vladislav Plotnikov</maintainer>
 
   <license>MIT</license>
 
