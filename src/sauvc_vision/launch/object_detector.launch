@@ -1,8 +1,7 @@
 <launch>
-
     <include file="$(find stingray_vision)/launch/object_detector.launch">
-        <!-- Package name with dnn weights -->
-        <arg name="dnn_weights_pkg" default="sauvc_vision" />
+        <!-- Defines FPS -->
+        <arg name="fps" default="25" />
         <!-- Enables video streaming -->
         <arg name="stream" default="true" />
         <!-- Enables video recording -->
@@ -11,7 +10,16 @@
         <!-- False to enable videofile -->
         <arg name="cameras" default="false" />
         <!-- Providing video from file -->
-        <arg name="videofile_path" default="/home/vladushked/Documents/hydro/dnn_gate_detector/run_detection_scripts/video/2.mp4" />
+        <!-- Path example /home/vladushked/Documents/hydro/dnn_gate_detector/run_detection_scripts/video/2.mp4 -->
+        <arg name="videofile_path" default="path/to/your/videofile" />
+        <!-- Defines device that will be used as camera -->
+        <!-- < arg name="device_front" default="/dev/v4l/by-path/platform-3530000.xhci-usb-0:1:1.0-video-index0"> -->
+        <!-- < arg name="device_bottom" default="/dev/v4l/by-path/platform-3530000.xhci-usb-0:2:1.0-video-index0"> -->
+        <arg name="device_front" default="/dev/video0" />
+        <arg name="device_bottom" default="/dev/video2" />
+        <!-- Package name with your dnn weights -->
+        <arg name="dnn_weights_pkg" default="sauvc_vision" />
+        <!-- DNN input image size: X Y -->
+        <arg name="resize_input_to" default="300 300" />
     </include>
-
 </launch>
